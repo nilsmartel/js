@@ -5,4 +5,4 @@ authors = ["Nils Martel <nils.martel@concepts-system.com>"]
 edition = "2018"
 
 [dependencies]
-nom = "5.0.0-beta2"
+nom = "5.0.0"

@@ -15,6 +15,7 @@ pub fn is_keyword(s: &str) -> bool {
         "return",
         "in",
         // following are not used yet
+        "do",
         "switch",
         "typeof",
         "of",

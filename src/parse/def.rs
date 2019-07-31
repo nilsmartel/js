@@ -1,3 +1,4 @@
+use crate::parse::expression::Expr;
 ///
 /// Definitions
 ///
@@ -8,9 +9,12 @@
 /// let <ident>;
 /// let <ident> = <expr>;
 /// function <ident> ( <list(',', <expr>)>) { ... }
-use crate::parse::expression::Expr;
+use nom::IResult;
 
 pub mod definition {
+    use crate::parse::util::*;
+    use nom::bytes::complete::tag;
+    use nom::IResult;
     pub struct Let {
         identifier: String,
         assign: Option<Box<crate::parse::expression::Expr>>,
@@ -21,16 +25,28 @@ pub mod definition {
         arguments: Vec<String>,
         body: super::FunctionBody,
     }
+
+    impl Let {
+        pub fn parse(i: &str) -> IResult<&str, Let> {
+            tag("let")(i)?;
+            whitespace(i)?;
+            Let {
+                identifier: ident(i)?.1,
+                assign: { nom::condition::opt(whitespace(i)) },
+            }
+        }
+    }
 }
 
 /// List of Let definitions, expressions, if/else pairs, for/whiles and return statements
 pub struct FunctionBody {
     scope: Vec<definition::Let>,
-    instructions: Vec<Instruction>,
+    instructions: Vec<Statement>,
 }
 
 /// Either an Expression, if/else pair, for/while loop or return statement
-enum Instruction {
+/// Note that Mutations are expressions
+enum Statement {
     Return(Option<Box<Expr>>),
     If {
         condition: Box<Expr>,
@@ -47,4 +63,22 @@ enum Instruction {
 /// e.g.
 /// for (let i=0; i<len; i++) { ... }
 /// for (let elem of array) { ... }
-enum ForLoop {}
+enum ForLoop {
+    // for(;;)
+    CStyle {
+        // This type of JavaScript only allows let as start of for loops
+        prerequisite: definition::Let,
+        condition: Box<Expr>,
+        mutation: Box<Expr>,
+    },
+    // for(let x of y)
+    ElemOfIter {
+        element: String,
+        iter: String,
+    },
+    // for(let x in y)
+    KeyInIter {
+        key: String,
+        iter: String,
+    },
+}
