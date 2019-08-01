@@ -13,3 +13,9 @@ pub enum Expr {
     Value(Value),
     // TODO bitshift
 }
+
+impl Expr {
+    pub fn dummy() -> Expr {
+        Expr::Value(Value(0.0))
+    }
+}
