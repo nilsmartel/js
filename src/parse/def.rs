@@ -28,20 +28,10 @@ pub mod definition {
 
     impl Let {
         pub fn parse(i: &str) -> IResult<&str, Let> {
-            // TODO Dear god, this looks awful. Needs to be rewritten
-            let (i, _) = tag("let")(i)?;
-            let (i, _) = whitespace(i)?;
+            let (i, _) = ignore_ws(tag("let"))(i)?;
             let (i, identifier) = ident(i)?;
-            let (rest, _) = whitespace(i)?;
 
-            match nom::sequence::preceded(
-                nom::sequence::terminated(whitespace, tag("=")),
-                // TODO include expression parser
-                tag("<expr>")
-            ) (rest){
-                Ok((rest, expr)) => Ok((rest, Let { identifier, assign: Some(Box::new(crate::parse::expression::Expr::dummy())) })),
-                Err(_)  => Ok((rest, Let { identifier, assign: None }))
-            }
+            Ok((i, Let { identifier, assign: None }))
         }
     }
 }

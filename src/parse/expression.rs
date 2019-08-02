@@ -14,8 +14,11 @@ pub enum Expr {
     // TODO bitshift
 }
 
+use nom::IResult;
+    use nom::bytes::complete::tag;
 impl Expr {
-    pub fn dummy() -> Expr {
-        Expr::Value(Value(0.0))
+    pub fn parse(i: &str) -> IResult<&str, Expr> {
+        tag("<expr>")(i)
+            .map(|(rest, _)| (rest, Expr::Value(Value(0.0))))
     }
 }
