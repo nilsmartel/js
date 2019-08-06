@@ -87,6 +87,8 @@ enum Statement {
         condition: Box<Expr>,
         body: FunctionBody,
     },
+    Break,
+    Continue,
 }
 
 impl Statement {
@@ -121,6 +123,14 @@ impl Statement {
                 else_branch: None,
             },
         ))
+    }
+
+    fn parse_break(input: &str) -> IResult<&str, Statement> {
+        tag_ws("break")(input).map(|(i, _)| (i, Statement::Break))
+    }
+
+    fn parse_continue(input: &str) -> IResult<&str, Statement> {
+        tag_ws("contine")(input).map(|(i, _)| (i, Statement::Continue))
     }
 
     fn into_function_body(self) -> FunctionBody {
