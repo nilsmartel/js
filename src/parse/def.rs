@@ -1,4 +1,6 @@
 use crate::parse::expression::Expr;
+use nom::bytes::complete::tag;
+use nom::IResult;
 
 ///
 /// Definitions
@@ -28,15 +30,25 @@ pub mod definition {
     impl Let {
         pub fn parse(i: &str) -> IResult<&str, Let> {
             let (i, _) = ignore_ws(tag("let"))(i)?;
-            let (i, identifier) = ident(i)?;
+            let (i, identifier) = ignore_ws(ident)(i)?;
 
-            Ok((
-                i,
-                Let {
-                    identifier,
-                    assign: None,
-                },
-            ))
+            use nom::sequence::preceded;
+            match preceded(ignore_ws(tag("=")), ignore_ws(expression::Expr::parse))(i) {
+                Ok((rest, expr)) => Ok((
+                    rest,
+                    Let {
+                        identifier,
+                        assign: Some(Box::new(expr)),
+                    },
+                )),
+                _ => Ok((
+                    i,
+                    Let {
+                        identifier,
+                        assign: None,
+                    },
+                )),
+            }
         }
     }
 }
@@ -60,6 +72,10 @@ enum Statement {
         condition: Box<Expr>,
         body: FunctionBody,
     },
+}
+
+impl Statement {
+    pub fn parse(input: &str) -> IResult<&str, Statement> {}
 }
 
 /// Represents different kinds of for loops
