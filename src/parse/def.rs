@@ -13,7 +13,7 @@ use nom::IResult;
 /// let <ident>;
 /// let <ident> = <expr>;
 /// function <ident> ( <list(',', <expr>)>) { ... }
-pub mod definition {
+pub mod define {
     use crate::parse::*;
     use nom::bytes::complete::tag;
     use nom::IResult;
@@ -56,7 +56,7 @@ pub mod definition {
 
 /// List of Variable definitions, expressions, if/else pairs, for/whiles and return statements
 pub struct FunctionBody {
-    scope: Vec<definition::Variable>,
+    scope: Vec<define::Variable>,
     instructions: Vec<Statement>,
 }
 
@@ -160,7 +160,7 @@ enum ForLoop {
     // for(;;)
     CStyle {
         // This type of JavaScript only allows let as start of for loops
-        prerequisite: definition::Variable,
+        prerequisite: define::Variable,
         condition: Box<Expr>,
         mutation: Box<Expr>,
     },
