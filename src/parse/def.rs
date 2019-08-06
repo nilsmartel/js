@@ -16,7 +16,7 @@ pub mod definition {
     use crate::parse::*;
     use nom::bytes::complete::tag;
     use nom::IResult;
-    pub struct Let {
+    pub struct Variable {
         identifier: String,
         assign: Option<Box<crate::parse::expression::Expr>>,
     }
@@ -27,8 +27,8 @@ pub mod definition {
         body: super::FunctionBody,
     }
 
-    impl Let {
-        pub fn parse(i: &str) -> IResult<&str, Let> {
+    impl Variable {
+        pub fn parse(i: &str) -> IResult<&str, Variable> {
             let (i, _) = ignore_ws(tag("let"))(i)?;
             let (i, identifier) = ignore_ws(ident)(i)?;
 
@@ -36,14 +36,14 @@ pub mod definition {
             match preceded(ignore_ws(tag("=")), ignore_ws(expression::Expr::parse))(i) {
                 Ok((rest, expr)) => Ok((
                     rest,
-                    Let {
+                    Variable {
                         identifier,
                         assign: Some(Box::new(expr)),
                     },
                 )),
                 _ => Ok((
                     i,
-                    Let {
+                    Variable {
                         identifier,
                         assign: None,
                     },
@@ -53,9 +53,9 @@ pub mod definition {
     }
 }
 
-/// List of Let definitions, expressions, if/else pairs, for/whiles and return statements
+/// List of Variable definitions, expressions, if/else pairs, for/whiles and return statements
 pub struct FunctionBody {
-    scope: Vec<definition::Let>,
+    scope: Vec<definition::Variable>,
     instructions: Vec<Statement>,
 }
 
@@ -75,7 +75,15 @@ enum Statement {
 }
 
 impl Statement {
-    pub fn parse(input: &str) -> IResult<&str, Statement> {}
+    /*
+    pub fn parse(input: &str) -> IResult<&str, Statement> {
+
+    }
+
+    fn parse_if_else(input: &str) -> IResult<&str, Statement> {
+
+    }
+    */
 }
 
 /// Represents different kinds of for loops
@@ -86,7 +94,7 @@ enum ForLoop {
     // for(;;)
     CStyle {
         // This type of JavaScript only allows let as start of for loops
-        prerequisite: definition::Let,
+        prerequisite: definition::Variable,
         condition: Box<Expr>,
         mutation: Box<Expr>,
     },
