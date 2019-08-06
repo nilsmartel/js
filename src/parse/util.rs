@@ -15,12 +15,13 @@ mod tests {
     }
 }
 
-/// Remove all preceding whitespace, newlines, tabs etc.
+/// Remove all whitespace, newlines, tabs etc.
 /// Will always suceed
 pub fn whitespace(s: &str) -> IResult<&str, &str> {
     nom::bytes::complete::take_while(|c| c == ' ' || c == '\n' || c == '\r' || c == '\t')(s)
 }
 
+/// Wrap around a Parser to automatically ignore preceding whitespace
 pub fn ignore_ws<'a, T>(
     f: impl Fn(&'a str) -> IResult<&'a str, T>,
 ) -> impl Fn(&'a str) -> IResult<&'a str, T> {
@@ -30,6 +31,17 @@ pub fn ignore_ws<'a, T>(
     }
 }
 
-pub fn ident(s: &str) -> IResult<&str, String> {
-    nom::character::complete::alpha1(s).map(|(a, b)| (a, b.to_string()))
+/// Recognize Identifiers,
+/// Escapes keywords
+pub fn ident(input: &str) -> IResult<&str, String> {
+    use crate::parse::keywords::is_keyword;
+    use nom::character::complete::alpha1;
+
+    let (rest, identifier) = alpha1(input)?; //.map(|(a, b)| (a, b.to_string()))?
+
+    if is_keyword(identifier) {
+        return Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)));
+    }
+
+    Ok((rest, identifier.to_string()))
 }

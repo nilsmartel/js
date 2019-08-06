@@ -11,7 +11,7 @@ use crate::parse::expression::Expr;
 /// let <ident> = <expr>;
 /// function <ident> ( <list(',', <expr>)>) { ... }
 pub mod definition {
-    use crate::parse::util::*;
+    use crate::parse::*;
     use nom::bytes::complete::tag;
     use nom::IResult;
     pub struct Let {

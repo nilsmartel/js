@@ -4,7 +4,7 @@
 /// JavaScript contains several keywords.
 /// This will only be a subset.
 
-pub fn is_keyword(s: &str) -> bool {
+pub fn is_keyword(input: &str) -> bool {
     vec![
         "let",
         "for",
@@ -25,5 +25,5 @@ pub fn is_keyword(s: &str) -> bool {
         "constructor",
         "break",
     ]
-    .contains(&s)
+    .contains(&input)
 }
