@@ -13,6 +13,19 @@ mod tests {
         assert_eq!(Ok(("", "    ")), whitespace("    "));
         assert_eq!(Ok(("", "")), whitespace(""));
     }
+
+    #[test]
+    fn test_ignore_ws() {
+        use nom::bytes::complete::tag;
+        assert_eq!(Ok(("", "hello")), ignore_ws(tag("hello"))("hello"));
+        assert_eq!(Ok(("", "hello")), ignore_ws(tag("hello"))("   hello"));
+    }
+
+    #[test]
+    fn test_tag_ws() {
+        assert_eq!(Ok(("", "hello")), tag_ws("hello")("hello"));
+        assert_eq!(Ok(("", "hello")), tag_ws("hello")("   hello"));
+    }
 }
 
 /// Remove all whitespace, newlines, tabs etc.
@@ -29,6 +42,10 @@ pub fn ignore_ws<'a, T>(
         let (i, _) = whitespace(i).unwrap();
         f(i)
     }
+}
+
+pub fn tag_ws<'a>(t: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, &'a str> {
+    ignore_ws(move |input: &str| nom::bytes::complete::tag(t)(input))
 }
 
 /// Recognize Identifiers,
