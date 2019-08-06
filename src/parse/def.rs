@@ -1,6 +1,8 @@
 use crate::parse::expression::Expr;
 use crate::parse::tag_ws;
 use nom::bytes::complete::tag;
+use nom::character::char;
+use nom::sequence::{delimited, preceded};
 use nom::IResult;
 
 ///
@@ -97,8 +99,6 @@ impl Statement {
     }
 
     fn parse_if_else(input: &str) -> IResult<&str, Statement> {
-        use nom::character::complete::char;
-        use nom::sequence::delimited;
         let (input, _) = tag_ws("if")(input)?;
         let (input, condition) = delimited(char('('), Expr::parse, char(')'))(input)?;
 
@@ -123,6 +123,23 @@ impl Statement {
                 else_branch: None,
             },
         ))
+    }
+
+    fn parse_while(input: &str) -> IResult<&str, Statement> {
+        let (input, condition) = preceded(
+            tag_ws("while"),
+            delimited(char('('), Expr::parse, char(')')),
+        )(input)?;
+
+        let (input, body) = Statement::single_statement_body(input)?;
+
+        return Ok((
+            input,
+            Statement::While {
+                condition: Box::new(condition),
+                body,
+            },
+        ));
     }
 
     fn parse_break(input: &str) -> IResult<&str, Statement> {
@@ -152,8 +169,6 @@ impl Statement {
     /// }
     /// ```
     fn single_statement_body(input: &str) -> IResult<&str, FunctionBody> {
-        use nom::character::complete::char;
-        use nom::sequence::delimited;
         if let Ok((i, s)) = Statement::parse(input) {
             Ok((i, s.into_function_body()))
         } else {
