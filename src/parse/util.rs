@@ -1,4 +1,3 @@
-
 use nom::IResult;
 
 #[cfg(test)]
@@ -7,29 +6,26 @@ mod tests {
 
     #[test]
     fn test_whitespace() {
-        assert_eq!(
-            ("hello", ""),
-            whitespace("hello")
-            );
+        assert_eq!(Ok(("hello", "")), whitespace("hello"));
 
-        assert_eq!(
-            ("hello", "\n "),
-            whitespace("\n hello")
-        );
+        assert_eq!(Ok(("hello", "\n ")), whitespace("\n hello"));
 
-        assert_eq!(("", "    "), whitespace("    "));
-        assert_eq!(("", ""), whitespace(""));
+        assert_eq!(Ok(("", "    ")), whitespace("    "));
+        assert_eq!(Ok(("", "")), whitespace(""));
     }
 }
 
-pub fn whitespace(s: &str) -> (&str, &str) {
-    nom::bytes::complete::take_while(|c| c == ' ' || c == '\n'|| c== '\r' || c == '\t')(s).unwrap()
+/// Remove all preceding whitespace, newlines, tabs etc.
+/// Will always suceed
+pub fn whitespace(s: &str) -> IResult<&str, &str> {
+    nom::bytes::complete::take_while(|c| c == ' ' || c == '\n' || c == '\r' || c == '\t')(s)
 }
 
-#[inline]
-pub fn ignore_ws<T>(f: impl Fn(&str) -> IResult<&str, T>) -> impl Fn(&str) -> IResult<&str, T> {
+pub fn ignore_ws<'a, T>(
+    f: impl Fn(&'a str) -> IResult<&'a str, T>,
+) -> impl Fn(&'a str) -> IResult<&'a str, T> {
     move |i: &str| {
-        let (i, _) = whitespace(i);
+        let (i, _) = whitespace(i).unwrap();
         f(i)
     }
 }
