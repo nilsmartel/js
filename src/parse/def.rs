@@ -1,4 +1,5 @@
 use crate::parse::expression::Expr;
+use crate::parse::tag_ws;
 use nom::bytes::complete::tag;
 use nom::IResult;
 
@@ -59,6 +60,20 @@ pub struct FunctionBody {
     instructions: Vec<Statement>,
 }
 
+impl FunctionBody {
+    pub fn parse(input: &str) -> IResult<&str, FunctionBody> {
+        tag_ws("<function body>")(input).map(|(rest, _): (&str, &str)| {
+            (
+                rest,
+                FunctionBody {
+                    scope: Vec::new(),
+                    instructions: Vec::new(),
+                },
+            )
+        })
+    }
+}
+
 /// Either an Expression, if/else pair, for/while loop or return statement
 /// Note that Mutations are expressions
 enum Statement {
@@ -75,15 +90,66 @@ enum Statement {
 }
 
 impl Statement {
-    /*
     pub fn parse(input: &str) -> IResult<&str, Statement> {
-
+        unimplemented!()
     }
 
     fn parse_if_else(input: &str) -> IResult<&str, Statement> {
+        use nom::character::complete::char;
+        use nom::sequence::delimited;
+        let (input, _) = tag_ws("if")(input)?;
+        let (input, condition) = delimited(char('('), Expr::parse, char(')'))(input)?;
 
+        let (input, body) = Statement::single_statement_body(input)?;
+        if let Ok((input, _)) = tag_ws("else")(input) {
+            let (input, else_branch) = Statement::single_statement_body(input)?;
+            return Ok((
+                input,
+                Statement::If {
+                    condition: Box::new(condition),
+                    body,
+                    else_branch: Some(else_branch),
+                },
+            ));
+        }
+
+        Ok((
+            input,
+            Statement::If {
+                condition: Box::new(condition),
+                body,
+                else_branch: None,
+            },
+        ))
     }
-    */
+
+    fn into_function_body(self) -> FunctionBody {
+        FunctionBody {
+            scope: Vec::new(),
+            instructions: vec![self],
+        }
+    }
+
+    /// May either be a single statement, or an functionbody wrapped in curly brackets
+    /// ```js
+    /// return something
+    /// ```
+    /// or
+    /// ```js
+    /// {
+    ///     do_stuff()
+    ///     do_more_stuff()
+    /// }
+    /// ```
+    fn single_statement_body(input: &str) -> IResult<&str, FunctionBody> {
+        use nom::character::complete::char;
+        use nom::sequence::delimited;
+        if let Ok((i, s)) = Statement::parse(input) {
+            Ok((i, s.into_function_body()))
+        } else {
+            delimited(char('{'), FunctionBody::parse, char('}'))(input)
+        }
+    }
 }
 
 /// Represents different kinds of for loops
