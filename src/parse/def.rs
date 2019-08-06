@@ -1,4 +1,5 @@
 use crate::parse::expression::Expr;
+
 ///
 /// Definitions
 ///
@@ -9,8 +10,6 @@ use crate::parse::expression::Expr;
 /// let <ident>;
 /// let <ident> = <expr>;
 /// function <ident> ( <list(',', <expr>)>) { ... }
-use nom::IResult;
-
 pub mod definition {
     use crate::parse::util::*;
     use nom::bytes::complete::tag;
@@ -31,7 +30,13 @@ pub mod definition {
             let (i, _) = ignore_ws(tag("let"))(i)?;
             let (i, identifier) = ident(i)?;
 
-            Ok((i, Let { identifier, assign: None }))
+            Ok((
+                i,
+                Let {
+                    identifier,
+                    assign: None,
+                },
+            ))
         }
     }
 }
