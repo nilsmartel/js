@@ -1,7 +1,8 @@
 use crate::parse::expression::Expr;
 use crate::parse::tag_ws;
 use nom::bytes::complete::tag;
-use nom::character::char;
+use nom::character::complete::char;
+use nom::combinator::opt;
 use nom::sequence::{delimited, preceded};
 use nom::IResult;
 
@@ -93,6 +94,19 @@ enum Statement {
     Continue,
 }
 
+#[cfg(test)]
+mod StatementTests {
+    use super::Statement;
+
+    #[test]
+    fn test_return() {
+        let tests = vec!["return", "   return  ", "return <expr>"];
+        for test in tests {
+            Statement::parse_return(test);
+        }
+    }
+}
+
 impl Statement {
     pub fn parse(input: &str) -> IResult<&str, Statement> {
         unimplemented!()
@@ -140,6 +154,16 @@ impl Statement {
                 body,
             },
         ));
+    }
+
+    fn parse_return(input: &str) -> IResult<&str, Statement> {
+        let (input, ret) = preceded(tag_ws("return"), opt(Expr::parse))(input)?;
+
+        if let Some(expr) = ret {
+            Ok((input, Statement::Return(Some(Box::new(expr)))))
+        } else {
+            Ok((input, Statement::Return(None)))
+        }
     }
 
     fn parse_break(input: &str) -> IResult<&str, Statement> {
