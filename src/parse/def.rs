@@ -115,6 +115,8 @@ mod StatementTests {
     #[test]
     fn test_single_statement() {
         assert!(Statement::single_statement_body("return").is_ok());
+        assert!(Statement::single_statement_body("  break").is_ok());
+        assert!(Statement::single_statement_body(" { <function body> } ").is_ok());
     }
 
     #[test]
