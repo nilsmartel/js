@@ -105,6 +105,36 @@ mod StatementTests {
             Statement::parse_return(test);
         }
     }
+
+    #[test]
+    fn test_break_and_continue() {
+        assert!(Statement::parse_break("  break").is_ok());
+        assert!(Statement::parse_continue("\n  continue ").is_ok());
+    }
+
+    #[test]
+    fn test_while() {
+        let input = "
+            while (<expr) break
+            ";
+        assert!(Statement::parse_while(input).is_ok());
+    }
+
+    #[test]
+    fn test_if() {
+        let input = "
+            if(<expr)return
+            ";
+        assert!(Statement::parse_if_block(input).is_ok());
+    }
+
+    #[test]
+    fn test_doodle() {
+        use crate::parse::expression::Expr;
+        use nom::character::complete::char;
+        use nom::sequence::delimited;
+        assert!(delimited(char('('), Expr::parse, char(')'))("(<expr>)").is_ok())
+    }
 }
 
 impl Statement {
@@ -112,7 +142,7 @@ impl Statement {
         unimplemented!()
     }
 
-    fn parse_if_else(input: &str) -> IResult<&str, Statement> {
+    fn parse_if_block(input: &str) -> IResult<&str, Statement> {
         let (input, _) = tag_ws("if")(input)?;
         let (input, condition) = delimited(char('('), Expr::parse, char(')'))(input)?;
 
@@ -171,7 +201,7 @@ impl Statement {
     }
 
     fn parse_continue(input: &str) -> IResult<&str, Statement> {
-        tag_ws("contine")(input).map(|(i, _)| (i, Statement::Continue))
+        tag_ws("continue")(input).map(|(i, _)| (i, Statement::Continue))
     }
 
     fn into_function_body(self) -> FunctionBody {
