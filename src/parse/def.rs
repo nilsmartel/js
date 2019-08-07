@@ -122,7 +122,7 @@ mod StatementTests {
     #[test]
     fn test_while() {
         let input = "
-            while (<expr) break
+            while (<expr>) break
             ";
         assert!(Statement::parse_while(input).is_ok());
     }
@@ -130,7 +130,7 @@ mod StatementTests {
     #[test]
     fn test_if() {
         let input = "
-            if(<expr)return
+            if(<expr>)return
             ";
         assert!(Statement::parse_if_block(input).is_ok());
     }
