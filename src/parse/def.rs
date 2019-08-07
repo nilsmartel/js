@@ -113,6 +113,11 @@ mod StatementTests {
     }
 
     #[test]
+    fn test_single_statement() {
+        assert!(Statement::single_statement_body("return").is_ok());
+    }
+
+    #[test]
     fn test_while() {
         let input = "
             while (<expr) break
@@ -131,12 +136,32 @@ mod StatementTests {
 
 impl Statement {
     pub fn parse(input: &str) -> IResult<&str, Statement> {
-        unimplemented!()
+        use nom::branch::alt;
+        alt((
+            Statement::parse_if_block,
+            alt((
+                Statement::parse_return,
+                alt((
+                    Statement::parse_while,
+                    alt((
+                        Statement::parse_for,
+                        alt((Statement::parse_break, Statement::parse_continue)),
+                    )),
+                )),
+            )),
+        ))(input)
+    }
+
+    fn parse_for(input: &str) -> IResult<&str, Statement> {
+        // TODO implement
+        Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)))
     }
 
     fn parse_if_block(input: &str) -> IResult<&str, Statement> {
-        let (input, _) = tag_ws("if")(input)?;
-        let (input, condition) = delimited(char_ws('('), Expr::parse, char_ws(')'))(input)?;
+        let (input, condition) = preceded(
+            tag_ws("if"),
+            delimited(char_ws('('), Expr::parse, char_ws(')')),
+        )(input)?;
 
         let (input, body) = Statement::single_statement_body(input)?;
         if let Ok((input, _)) = tag_ws("else")(input) {
