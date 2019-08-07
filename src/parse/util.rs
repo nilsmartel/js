@@ -44,8 +44,14 @@ pub fn ignore_ws<'a, T>(
     }
 }
 
+/// Tags a string while ignoring preceding whitespace
 pub fn tag_ws<'a>(t: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, &'a str> {
     ignore_ws(move |input: &str| nom::bytes::complete::tag(t)(input))
+}
+
+/// Tags a character while ignoring preceding whitespace
+pub fn char_ws(c: char) -> impl Fn(&str) -> IResult<&str, char> {
+    move |input: &str| ignore_ws(nom::character::complete::char(c))(input)
 }
 
 /// Recognize Identifiers,
