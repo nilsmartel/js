@@ -37,23 +37,6 @@ impl FunctionBody {
     }
 }
 
-/// Either an Expression, if/else pair, for/while loop or return statement
-/// Note that Mutations are expressions
-enum Statement {
-    Return(Option<Box<Expr>>),
-    If {
-        condition: Box<Expr>,
-        body: FunctionBody,
-        else_branch: Option<FunctionBody>,
-    },
-    While {
-        condition: Box<Expr>,
-        body: FunctionBody,
-    },
-    Break,
-    Continue,
-}
-
 #[cfg(test)]
 mod statement_tests {
     use super::Statement;
@@ -101,6 +84,24 @@ mod statement_tests {
     }
 }
 
+/// Either an Expression, if/else pair, for/while loop or return statement
+/// Note that Mutations are expressions
+enum Statement {
+    Return(Option<Box<Expr>>),
+    If {
+        condition: Box<Expr>,
+        body: FunctionBody,
+        else_branch: Option<FunctionBody>,
+    },
+    While {
+        condition: Box<Expr>,
+        body: FunctionBody,
+    },
+    Break,
+    Continue,
+    Expression(Box<Expr>),
+}
+
 impl Statement {
     pub fn parse(input: &str) -> IResult<&str, Statement> {
         use nom::branch::alt;
@@ -112,7 +113,10 @@ impl Statement {
                     Statement::parse_while,
                     alt((
                         Statement::parse_for,
-                        alt((Statement::parse_break, Statement::parse_continue)),
+                        alt((
+                            Statement::parse_break,
+                            alt((Statement::parse_continue, Statement::parse_expression)),
+                        )),
                     )),
                 )),
             )),
@@ -122,6 +126,10 @@ impl Statement {
     fn parse_for(input: &str) -> IResult<&str, Statement> {
         // TODO implement
         Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)))
+    }
+
+    fn parse_expression(input: &str) -> IResult<&str, Statement> {
+        Expr::parse(input).map(|(i, e)| (i, Statement::Expression(Box::new(e))))
     }
 
     fn parse_if_block(input: &str) -> IResult<&str, Statement> {
