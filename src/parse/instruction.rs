@@ -92,7 +92,7 @@ mod statement_tests {
         let inputs = vec![
             "if (<expr>) { <function body> }",
             "\nif  \t( <expr> )    break",
-            //"if(<expr>){<function body>}",
+            "if(<expr>){<function body>}",
         ];
 
         for input in inputs {
