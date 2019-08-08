@@ -89,10 +89,15 @@ mod statement_tests {
 
     #[test]
     fn test_if() {
-        let input = "
-            if(<expr>)return
-            ";
-        assert!(Statement::parse_if_block(input).is_ok());
+        let inputs = vec![
+            "if (<expr>) { <function body> }",
+            "\nif  \t( <expr> )    break",
+            //"if(<expr>){<function body>}",
+        ];
+
+        for input in inputs {
+            assert!(Statement::parse_if_block(input).is_ok())
+        }
     }
 }
 

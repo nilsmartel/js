@@ -14,11 +14,10 @@ pub enum Expr {
     // TODO bitshift
 }
 
+use crate::parse::tag_ws;
 use nom::IResult;
-    use nom::bytes::complete::tag;
 impl Expr {
     pub fn parse(i: &str) -> IResult<&str, Expr> {
-        tag("<expr>")(i)
-            .map(|(rest, _)| (rest, Expr::Value(Value(0.0))))
+        tag_ws("<expr>")(i).map(|(rest, _)| (rest, Expr::Value(Value(0.0))))
     }
 }
