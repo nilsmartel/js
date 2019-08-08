@@ -62,7 +62,7 @@ mod statement_tests {
     fn test_return() {
         let tests = vec!["return", "   return  ", "return <expr>"];
         for test in tests {
-            Statement::parse_return(test);
+            assert!(Statement::parse_return(test).is_ok());
         }
     }
 
