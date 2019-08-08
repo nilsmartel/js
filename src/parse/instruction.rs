@@ -97,6 +97,7 @@ enum Statement {
         condition: Box<Expr>,
         body: FunctionBody,
     },
+    For(ForLoop),
     Break,
     Continue,
     Expression(Box<Expr>),
@@ -124,8 +125,7 @@ impl Statement {
     }
 
     fn parse_for(input: &str) -> IResult<&str, Statement> {
-        // TODO implement
-        Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)))
+        ForLoop::parse(input).map(|(i, f)| (i, Statement::For(f)))
     }
 
     fn parse_expression(input: &str) -> IResult<&str, Statement> {
@@ -223,11 +223,37 @@ impl Statement {
     }
 }
 
-/// Represents different kinds of for loops
+struct ForLoop {
+    condition: ForLoopCondition,
+    body: FunctionBody,
+}
+
+impl ForLoop {
+    fn parse(input: &str) -> IResult<&str, ForLoop> {
+        let (input, condition) = preceded(
+            tag_ws("for"),
+            delimited(char_ws('('), ForLoopCondition::parse, char_ws(')')),
+        )(input)?;
+
+        let (input, body) = Statement::single_statement_body(input)?;
+
+        Ok((
+            input,
+            ForLoop {
+                condition,
+                body: Box::new(body),
+            },
+        ))
+    }
+}
+
+/// Represents different kinds of for loop conditions
 /// e.g.
+/// ```js
 /// for (let i=0; i<len; i++) { ... }
 /// for (let elem of array) { ... }
-enum ForLoop {
+/// ```
+enum ForLoopCondition {
     // for(;;)
     CStyle {
         // This type of JavaScript only allows let as start of for loops
@@ -245,4 +271,10 @@ enum ForLoop {
         key: String,
         iter: String,
     },
+}
+
+impl ForLoopCondition {
+    fn parse(input: &str) -> IResult<&str, Statement> {
+        Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)))
+    }
 }
