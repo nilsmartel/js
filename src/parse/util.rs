@@ -68,3 +68,10 @@ pub fn ident(input: &str) -> IResult<&str, String> {
 
     Ok((rest, identifier.to_string()))
 }
+
+pub fn concat<R1, Elem>(
+    sep: impl Fn(&str) -> IResult<&str, R1>,
+    tag_elem: impl Fn(&str) -> IResult<&str, Elem>,
+) -> IResult<&str, Vec<Elem>> {
+    unimplemented!()
+}
