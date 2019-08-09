@@ -82,9 +82,21 @@ impl ForLoopCondition {
 }
 
 mod condition_test {
-    use super::ForLoopCondition;
+    use super::*;
     #[test]
-    fn c_style_for() {
+    fn c_style_condition() {
         assert!(ForLoopCondition::parse_c_style("let x = <expr>; <expr>; <expr>").is_ok());
+    }
+
+    #[test]
+    fn for_loop() {
+        let cases = vec![
+            "for (let i = <expr>; <expr>; <expr>) { <function body> }",
+            "for (let i = <expr>; <expr>; <expr>) <expr>",
+        ];
+
+        for case in cases {
+            assert!(ForLoop::parse(case).is_ok());
+        }
     }
 }
