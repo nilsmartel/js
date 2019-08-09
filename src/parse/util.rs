@@ -28,7 +28,7 @@ mod tests {
     }
 
     #[test]
-    fn test_concast() {
+    fn test_concat() {
         let i = "Q,Q,Q,Q";
         assert!(concat(char_ws(','), char_ws('Q'))(i).is_ok());
     }
@@ -85,8 +85,10 @@ pub fn concat<'a, T, Elem>(
     move |input: &str| {
         let mut v: Vec<Elem> = Vec::new();
         let (mut input, elem) = tag_elem(input)?;
+
         loop {
             if let Ok((i, _)) = sep(input) {
+                eprintln!("Some Error");
                 let (i, elem) = tag_elem(input)?;
                 v.push(elem);
                 input = i;
