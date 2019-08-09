@@ -72,4 +72,14 @@ mod parse {
         // TODO Alternate Case of (nestings) here!!
         Value::parse(i).map(|(i, v)| (i, v.as_expr()))
     }
+
+    #[cfg(test)]
+    mod test {
+        use super::*;
+
+        #[test]
+        fn test_exponent() {
+            assert!(parse::exponent("1**1**1").is_ok());
+        }
+    }
 }
