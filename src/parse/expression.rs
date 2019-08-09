@@ -39,11 +39,15 @@ impl Expr {
     pub fn parse(i: &str) -> IResult<&str, Expr> {
         tag_ws("<expr>")(i).map(|(rest, _)| (rest, Expr::Value(Value(0.0))))
     }
+
+    fn boxed(self) -> Box<Self> {
+        Box::new(self)
+    }
 }
 
 mod parse {
     use super::*;
-    use crate::parse::{char_ws, tag_ws};
+    use crate::parse::{char_ws, concat, tag_ws};
     fn preceding_not(i: &str) -> IResult<&str, Expr> {
         if let Ok((i, _)) = char_ws('-')(i) {
             let (i, e) = exponent(i)?;
@@ -54,12 +58,15 @@ mod parse {
     }
 
     fn exponent(input: &str) -> IResult<&str, Expr> {
-        unimplemented!();
-        // TODO use parse::util::concat here!
+        let (input, start) = value(input)?;
+        concat(tag_ws("**"), value)(input).map(|(rest, list)| {
+            list.into_iter()
+                .reduce(start, |acc, val| Expr::Exponent(acc.boxed(), val.boxed()))
+        })
     }
 
     fn value(i: &str) -> IResult<&str, Expr> {
-        // TODO Alterantive Case of (nestings) here!!
+        // TODO Alternate Case of (nestings) here!!
         Value::parse(i).map(|(i, v)| (i, v.as_expr()))
     }
 }
