@@ -1,6 +1,10 @@
-use crate::parse::expression::Expr;
-use crate::parse::instruction::{FunctionBody, Statement};
-use crate::parse::{char_ws, tag_ws};
+use crate::parse::{
+    char_ws,
+    expression::Expr,
+    instruction::{FunctionBody, Statement},
+    scope::Variable,
+    tag_ws,
+};
 use nom::combinator::opt;
 use nom::sequence::{delimited, preceded};
 use nom::IResult;
@@ -11,7 +15,7 @@ pub struct ForLoop {
 }
 
 impl ForLoop {
-    fn parse(input: &str) -> IResult<&str, ForLoop> {
+    pub fn parse(input: &str) -> IResult<&str, ForLoop> {
         let (input, condition) = preceded(
             tag_ws("for"),
             delimited(char_ws('('), ForLoopCondition::parse, char_ws(')')),
@@ -33,7 +37,7 @@ enum ForLoopCondition {
     // for(;;)
     CStyle {
         // This type of JavaScript only allows let as start of for loops
-        prerequisite: scope::Variable,
+        prerequisite: Variable,
         condition: Box<Expr>,
         mutation: Box<Expr>,
     },
