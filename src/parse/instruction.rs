@@ -1,5 +1,6 @@
 use crate::parse::char_ws;
 use crate::parse::expression::Expr;
+use crate::parse::for_loop::ForLoop;
 use crate::parse::scope;
 use crate::parse::tag_ws;
 use nom::combinator::opt;
@@ -86,7 +87,7 @@ mod statement_tests {
 
 /// Either an Expression, if/else pair, for/while loop or return statement
 /// Note that Mutations are expressions
-enum Statement {
+pub enum Statement {
     Return(Option<Box<Expr>>),
     If {
         condition: Box<Expr>,
@@ -214,67 +215,11 @@ impl Statement {
     ///     do_more_stuff()
     /// }
     /// ```
-    fn single_statement_body(input: &str) -> IResult<&str, FunctionBody> {
+    pub fn single_statement_body(input: &str) -> IResult<&str, FunctionBody> {
         if let Ok((i, s)) = Statement::parse(input) {
             Ok((i, s.into_function_body()))
         } else {
             delimited(char_ws('{'), FunctionBody::parse, char_ws('}'))(input)
         }
-    }
-}
-
-struct ForLoop {
-    condition: ForLoopCondition,
-    body: FunctionBody,
-}
-
-impl ForLoop {
-    fn parse(input: &str) -> IResult<&str, ForLoop> {
-        let (input, condition) = preceded(
-            tag_ws("for"),
-            delimited(char_ws('('), ForLoopCondition::parse, char_ws(')')),
-        )(input)?;
-
-        let (input, body) = Statement::single_statement_body(input)?;
-
-        Ok((
-            input,
-            ForLoop {
-                condition,
-                body: Box::new(body),
-            },
-        ))
-    }
-}
-
-/// Represents different kinds of for loop conditions
-/// e.g.
-/// ```js
-/// for (let i=0; i<len; i++) { ... }
-/// for (let elem of array) { ... }
-/// ```
-enum ForLoopCondition {
-    // for(;;)
-    CStyle {
-        // This type of JavaScript only allows let as start of for loops
-        prerequisite: scope::Variable,
-        condition: Box<Expr>,
-        mutation: Box<Expr>,
-    },
-    // for(let x of y)
-    ElemOfIter {
-        element: String,
-        iter: String,
-    },
-    // for(let x in y)
-    KeyInIter {
-        key: String,
-        iter: String,
-    },
-}
-
-impl ForLoopCondition {
-    fn parse(input: &str) -> IResult<&str, Statement> {
-        Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)))
     }
 }

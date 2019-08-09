@@ -1,4 +1,5 @@
 mod expression;
+mod for_loop;
 mod instruction;
 mod keywords;
 mod obj;
