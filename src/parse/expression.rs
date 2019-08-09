@@ -18,8 +18,8 @@ pub enum Expr {
     Xor(Box<Expr>, Box<Expr>),
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
-    Mul(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
+    Mul(Box<Expr>, Box<Expr>),
     Exponent(Box<Expr>, Box<Expr>),
     Not(Box<Expr>),
     Value(Value),
@@ -51,7 +51,38 @@ impl Expr {
 mod parse {
     use super::*;
     use crate::parse::{char_ws, fold_concat, tag_ws};
-    fn preceding_not(i: &str) -> IResult<&str, Expr> {
+
+    fn or(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("||"), and, |acc, e| Expr::Or(acc.boxed(), e.boxed()))(input)
+    }
+    fn and(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("&&"), xor, |acc, e| {
+            Expr::And(acc.boxed(), e.boxed())
+        })(input)
+    }
+    fn xor(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("^"), add, |acc, e| Expr::Xor(acc.boxed(), e.boxed()))(input)
+    }
+
+    fn add(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("+"), sub, |acc, e| Expr::Add(acc.boxed(), e.boxed()))(input)
+    }
+
+    fn sub(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("-"), div, |acc, e| Expr::Sub(acc.boxed(), e.boxed()))(input)
+    }
+
+    fn div(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("/"), mul, |acc, e| Expr::Div(acc.boxed(), e.boxed()))(input)
+    }
+
+    fn mul(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("*"), preceding_sign, |acc, e| {
+            Expr::Mul(acc.boxed(), e.boxed())
+        })(input)
+    }
+
+    fn preceding_sign(i: &str) -> IResult<&str, Expr> {
         if let Ok((i, _)) = char_ws('-')(i) {
             let (i, e) = exponent(i)?;
             return Ok((i, Expr::Not(Box::new(e))));
