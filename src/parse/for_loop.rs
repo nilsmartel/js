@@ -5,9 +5,11 @@ use crate::parse::{
     scope::Variable,
     tag_ws,
 };
-use nom::combinator::opt;
-use nom::sequence::{delimited, preceded};
-use nom::IResult;
+use nom::{
+    combinator::opt,
+    sequence::{delimited, preceded, separated_pair},
+    IResult,
+};
 
 pub struct ForLoop {
     condition: ForLoopCondition,
@@ -37,10 +39,13 @@ enum ForLoopCondition {
     // for(;;)
     CStyle {
         // This type of JavaScript only allows let as start of for loops
+        // TODO Allow this to be optional
         prerequisite: Variable,
         condition: Box<Expr>,
         mutation: Box<Expr>,
     },
+
+    // TODO implement
     // for(let x of y)
     ElemOfIter {
         element: String,
@@ -55,6 +60,31 @@ enum ForLoopCondition {
 
 impl ForLoopCondition {
     fn parse(input: &str) -> IResult<&str, ForLoopCondition> {
-        Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)))
+        ForLoopCondition::parse_c_style(input)
+    }
+
+    fn parse_c_style(input: &str) -> IResult<&str, ForLoopCondition> {
+        let (rest, (prerequisite, (condition, mutation))) = separated_pair(
+            Variable::parse,
+            char_ws(';'),
+            separated_pair(Expr::parse, char_ws(';'), Expr::parse),
+        )(input)?;
+
+        Ok((
+            rest,
+            ForLoopCondition::CStyle {
+                prerequisite,
+                condition: Box::new(condition),
+                mutation: Box::new(mutation),
+            },
+        ))
+    }
+}
+
+mod condition_test {
+    use super::ForLoopCondition;
+    #[test]
+    fn c_style_for() {
+        assert!(ForLoopCondition::parse_c_style("let x = <expr>; <expr>; <expr>").is_ok());
     }
 }
