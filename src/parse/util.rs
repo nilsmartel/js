@@ -76,7 +76,19 @@ pub fn concat<'a, T, Elem>(
     sep: impl Fn(&'a str) -> IResult<&'a str, T>,
     tag_elem: impl Fn(&'a str) -> IResult<&'a str, Elem>,
 ) -> impl Fn(&'a str) -> IResult<&'a str, Vec<Elem>> {
-    |x| unimplemented!()
+    move |input: &str| {
+        let mut v: Vec<Elem> = Vec::new();
+        let (mut input, elem) = tag_elem(input)?;
+        loop {
+            if let Ok((i, _)) = sep(input) {
+                let (i, elem) = tag_elem(input)?;
+                v.push(elem);
+                input = i;
+            }
+        }
+
+        Ok((input, v))
+    }
 }
 
 /// Fold a list of Elements, tagged be `tag_elem` and seperated by `sep`
