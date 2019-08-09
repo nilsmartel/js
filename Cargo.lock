@@ -6,7 +6,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "js_parse"
+name = "js"
 version = "0.1.0"
 dependencies = [
  "nom 5.0.0 (registry+https://github.com/rust-lang/crates.io-index)",

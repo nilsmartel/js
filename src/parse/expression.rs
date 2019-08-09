@@ -60,8 +60,11 @@ mod parse {
     fn exponent(input: &str) -> IResult<&str, Expr> {
         let (input, start) = value(input)?;
         concat(tag_ws("**"), value)(input).map(|(rest, list)| {
-            list.into_iter()
-                .reduce(start, |acc, val| Expr::Exponent(acc.boxed(), val.boxed()))
+            (
+                rest,
+                list.into_iter()
+                    .fold(start, |acc, val| Expr::Exponent(acc.boxed(), val.boxed())),
+            )
         })
     }
 
