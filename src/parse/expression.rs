@@ -50,7 +50,7 @@ impl Expr {
 
 mod parse {
     use super::*;
-    use crate::parse::{char_ws, concat, tag_ws};
+    use crate::parse::{char_ws, fold_concat, tag_ws};
     fn preceding_not(i: &str) -> IResult<&str, Expr> {
         if let Ok((i, _)) = char_ws('-')(i) {
             let (i, e) = exponent(i)?;
@@ -61,14 +61,9 @@ mod parse {
     }
 
     fn exponent(input: &str) -> IResult<&str, Expr> {
-        let (input, start) = value(input)?;
-        concat(tag_ws("**"), value)(input).map(|(rest, list)| {
-            (
-                rest,
-                list.into_iter()
-                    .fold(start, |acc, val| Expr::Exponent(acc.boxed(), val.boxed())),
-            )
-        })
+        fold_concat(tag_ws("**"), value, |acc, e| {
+            Expr::Exponent(acc.boxed(), e.boxed())
+        })(input)
     }
 
     fn value(i: &str) -> IResult<&str, Expr> {
