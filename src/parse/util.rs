@@ -69,9 +69,33 @@ pub fn ident(input: &str) -> IResult<&str, String> {
     Ok((rest, identifier.to_string()))
 }
 
+/// List of Elements, seperated by `sep` parser, might be empty
+/// Note that this parser will fail, if the sep parser suceeds and the following element parser
+/// fails
 pub fn concat<'a, T, Elem>(
     sep: impl Fn(&'a str) -> IResult<&'a str, T>,
     tag_elem: impl Fn(&'a str) -> IResult<&'a str, Elem>,
 ) -> impl Fn(&'a str) -> IResult<&'a str, Vec<Elem>> {
     |x| unimplemented!()
+}
+
+/// Fold a list of Elements, tagged be `tag_elem` and seperated by `sep`
+pub fn fold_concat<'a, T, E>(
+    sep: impl Fn(&'a str) -> IResult<&'a str, T>,
+    tag_elem: impl Fn(&'a str) -> IResult<&'a str, E>,
+    folding: impl Fn(E, E) -> E,
+) -> impl Fn(&'a str) -> IResult<&'a str, E> {
+    move |input: &str| {
+        let (rest, list) = concat(&sep, &tag_elem)(input)?;
+        if list.len() == 0 {
+            return Err(nom::Err::Error((
+                rest,
+                nom::error::ErrorKind::SeparatedNonEmptyList,
+            )));
+        }
+
+        let mut iter = list.into_iter();
+        let fst = iter.next().unwrap();
+        Ok((rest, iter.fold(fst, &folding)))
+    }
 }
