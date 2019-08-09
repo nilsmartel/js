@@ -1,4 +1,8 @@
 # Rust JavaScript Engine
 
-Hardly anything to say just yet.
-Doing it for the fun
+---
+
+## Parser
+
+At the moment all work is going into the parser
+All Structures and Parser can be found in `src/parse/*`
