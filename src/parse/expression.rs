@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Value(f64);
 impl Value {
     pub fn parse(input: &str) -> IResult<&str, Value> {
@@ -9,6 +10,7 @@ impl Value {
     }
 }
 
+#[derive(Debug)]
 pub enum Expr {
     Mutate(MutationKind, Box<Expr>),
     Or(Box<Expr>, Box<Expr>),
@@ -24,6 +26,7 @@ pub enum Expr {
     // TODO bitshift
 }
 
+#[derive(Debug)]
 enum MutationKind {
     Assign,         // =
     AddAssign,      // +=

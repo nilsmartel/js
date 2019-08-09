@@ -88,11 +88,12 @@ pub fn concat<'a, T, Elem>(
 
         loop {
             if let Ok((i, _)) = sep(input) {
-                eprintln!("Some Error");
-                let (i, elem) = tag_elem(input)?;
+                let (i, elem) = tag_elem(i)?;
                 v.push(elem);
                 input = i;
+                continue;
             }
+            break;
         }
 
         Ok((input, v))
