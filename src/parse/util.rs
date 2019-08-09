@@ -26,6 +26,12 @@ mod tests {
         assert_eq!(Ok(("", "hello")), tag_ws("hello")("hello"));
         assert_eq!(Ok(("", "hello")), tag_ws("hello")("   hello"));
     }
+
+    #[test]
+    fn test_concast() {
+        let i = "Q,Q,Q,Q";
+        assert!(concat(char_ws(','), char_ws('Q'))(i).is_ok());
+    }
 }
 
 /// Remove all whitespace, newlines, tabs etc.
