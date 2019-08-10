@@ -211,6 +211,16 @@ mod test {
     }
 
     #[test]
+    fn sign_1() {
+        assert!(Expr::preceding_sign("-1").is_ok());
+    }
+
+    #[test]
+    fn sign_2() {
+        assert!(Expr::preceding_sign("!1").is_ok());
+    }
+
+    #[test]
     fn exponent() {
         assert!(Expr::exponent("1**1**1").is_ok());
     }
