@@ -1,7 +1,8 @@
 use crate::parse::{char_ws, fold_concat, not_followed, tag_ws};
 use nom::{
+    branch::alt,
     character::complete::char,
-    sequence::{preceded, separated_pair},
+    sequence::{delimited, preceded, separated_pair},
     IResult,
 };
 
@@ -185,9 +186,10 @@ impl Expr {
         })(input)
     }
 
-    fn value(i: &str) -> IResult<&str, Expr> {
-        // TODO Alternate Case of (nestings) here!!
-        Value::parse(i).map(|(i, v)| (i, v.as_expr()))
+    fn value(input: &str) -> IResult<&str, Expr> {
+        alt((delimited(char_ws('('), Expr::parse, char_ws(')')), |i| {
+            Value::parse(i).map(|(i, v)| (i, v.as_expr()))
+        }))(input)
     }
 }
 
