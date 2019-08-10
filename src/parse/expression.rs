@@ -1,5 +1,9 @@
 use crate::parse::{char_ws, fold_concat, not_followed, tag_ws};
-use nom::{character::complete::char, IResult};
+use nom::{
+    character::complete::char,
+    sequence::{preceded, separated_pair},
+    IResult,
+};
 
 #[derive(Debug)]
 pub struct Value(f64);
@@ -16,6 +20,11 @@ impl Value {
 #[derive(Debug)]
 pub enum Expr {
     Mutate(MutationKind, Box<Expr>),
+    Elvis {
+        condition: Box<Expr>,
+        case_true: Box<Expr>,
+        case_false: Box<Expr>,
+    },
     Or(Box<Expr>, Box<Expr>),
     And(Box<Expr>, Box<Expr>),
     Xor(Box<Expr>, Box<Expr>),
@@ -47,12 +56,33 @@ enum MutationKind {
 }
 
 impl Expr {
+    fn boxed(self) -> Box<Self> {
+        Box::new(self)
+    }
+
     pub fn parse(i: &str) -> IResult<&str, Expr> {
         Expr::or(i)
     }
 
-    fn boxed(self) -> Box<Self> {
-        Box::new(self)
+    pub fn elvis(input: &str) -> IResult<&str, Expr> {
+        let (input, expr) = Expr::or(input)?;
+
+        if let Ok((input, (case_true, case_false))) = preceded(
+            char_ws('?'),
+            separated_pair(Expr::parse, char_ws(':'), Expr::parse),
+        )(input)
+        {
+            return Ok((
+                input,
+                Expr::Elvis {
+                    condition: expr.boxed(),
+                    case_true: case_true.boxed(),
+                    case_false: case_false.boxed(),
+                },
+            ));
+        }
+
+        Ok((input, expr))
     }
 
     fn or(input: &str) -> IResult<&str, Expr> {
@@ -171,7 +201,17 @@ mod test {
     }
 
     #[test]
-    fn test_exponent() {
+    fn expression_2() {
+        assert!(Expr::parse("1 + 1 || 1 == 1 ^ 1 != 1/1 - 1").is_ok());
+    }
+
+    #[test]
+    fn elvis() {
+        assert!(Expr::elvis("1==1? 1+1 : 1-1").is_ok());
+    }
+
+    #[test]
+    fn exponent() {
         assert!(Expr::exponent("1**1**1").is_ok());
     }
 }
