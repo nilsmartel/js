@@ -30,7 +30,10 @@ mod tests {
     #[test]
     fn test_concat() {
         let i = "Q,Q,Q,Q";
-        assert!(concat(char_ws(','), char_ws('Q'))(i).is_ok());
+        assert_eq!(
+            concat(char_ws(','), char_ws('Q'))(i),
+            Ok(("", vec!['Q', 'Q', 'Q', 'Q']))
+        );
     }
 }
 
@@ -53,6 +56,17 @@ pub fn ignore_ws<'a, T>(
 /// Tags a string while ignoring preceding whitespace
 pub fn tag_ws<'a>(t: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, &'a str> {
     ignore_ws(move |input: &str| nom::bytes::complete::tag(t)(input))
+}
+
+pub fn not_followed<'a, A, B>(
+    applied: impl Fn(&'a str) -> IResult<&'a str, A>,
+    follow: impl Fn(&'a str) -> IResult<&'a str, B>,
+) -> impl Fn(&'a str) -> IResult<&'a str, A> {
+    move |input: &str| {
+        let (rest, result) = applied(input)?;
+        nom::combinator::not(&follow)(rest)?;
+        Ok((rest, result))
+    }
 }
 
 /// Tags a character while ignoring preceding whitespace
@@ -85,6 +99,7 @@ pub fn concat<'a, T, Elem>(
     move |input: &str| {
         let mut v: Vec<Elem> = Vec::new();
         let (mut input, elem) = tag_elem(input)?;
+        v.push(elem);
 
         loop {
             if let Ok((i, _)) = sep(input) {
@@ -111,7 +126,7 @@ pub fn fold_concat<'a, T, E>(
         if list.len() == 0 {
             return Err(nom::Err::Error((
                 rest,
-                nom::error::ErrorKind::SeparatedNonEmptyList,
+                nom::error::ErrorKind::SeparatedList,
             )));
         }
 

@@ -44,7 +44,7 @@ mod statement_tests {
 
     #[test]
     fn test_return() {
-        let tests = vec!["return", "   return  ", "return <expr>"];
+        let tests = vec!["return", "   return  ", "return 1"];
         for test in tests {
             assert!(Statement::parse_return(test).is_ok());
         }
@@ -66,7 +66,7 @@ mod statement_tests {
     #[test]
     fn test_while() {
         let input = "
-            while (<expr>) break
+            while (1) break
             ";
         assert!(Statement::parse_while(input).is_ok());
     }
@@ -74,9 +74,9 @@ mod statement_tests {
     #[test]
     fn test_if() {
         let inputs = vec![
-            "if (<expr>) { <function body> }",
-            "\nif  \t( <expr> )    break",
-            "if(<expr>){<function body>}",
+            "if (1) { <function body> }",
+            "\nif  \t( 1 )    break",
+            "if(1){<function body>}",
         ];
 
         for input in inputs {
