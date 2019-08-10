@@ -1,11 +1,11 @@
-use crate::parse::char_ws;
-use crate::parse::expression::Expr;
-use crate::parse::for_loop::ForLoop;
-use crate::parse::scope;
-use crate::parse::tag_ws;
-use nom::combinator::opt;
-use nom::sequence::{delimited, preceded};
-use nom::IResult;
+use crate::parse::{char_ws, expression::Expr, for_loop::ForLoop, scope, scope::Variable, tag_ws};
+use nom::{
+    branch::alt,
+    combinator::opt,
+    multi::many0,
+    sequence::{delimited, preceded},
+    IResult,
+};
 
 ///
 /// Definitions
@@ -20,21 +20,48 @@ use nom::IResult;
 
 /// List of Variable definitions, expressions, if/else pairs, for/whiles and return statements
 pub struct FunctionBody {
-    scope: Vec<scope::Variable>,
+    scope: Vec<Variable>,
     instructions: Vec<Statement>,
 }
 
 impl FunctionBody {
     pub fn parse(input: &str) -> IResult<&str, FunctionBody> {
-        tag_ws("<function body>")(input).map(|(rest, _): (&str, &str)| {
-            (
-                rest,
-                FunctionBody {
-                    scope: Vec::new(),
-                    instructions: Vec::new(),
-                },
-            )
-        })
+        enum VarOrStatement {
+            Var(Variable),
+            Statement(Statement),
+        }
+        fn v_or_s(input: &str) -> IResult<&str, VarOrStatement> {
+            if let Ok((i, v)) = Variable::parse(input) {
+                return Ok((i, VarOrStatement::Var(v)));
+            }
+
+            let (i, s) = Statement::parse(input)?;
+
+            Ok((i, VarOrStatement::Statement(s)))
+        }
+
+        // TODO parse functions itself
+        let (input, list) = many0(v_or_s)(input)?;
+        let fb = list.into_iter().fold(
+            FunctionBody {
+                scope: Vec::new(),
+                instructions: Vec::new(),
+            },
+            |mut acc, vs| {
+                match vs {
+                    VarOrStatement::Var(v) => {
+                        acc.scope.push(v);
+                    }
+                    VarOrStatement::Statement(s) => {
+                        acc.instructions.push(s);
+                    }
+                };
+
+                acc
+            },
+        );
+
+        Ok((input, fb))
     }
 }
 
