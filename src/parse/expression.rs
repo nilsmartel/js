@@ -223,6 +223,12 @@ mod test {
     }
 
     #[test]
+    fn nested_expressions() {
+        assert!(Expr::parse("(1)").is_ok());
+        assert!(Expr::parse("1*(1+1)").is_ok());
+    }
+
+    #[test]
     fn exponent() {
         assert!(Expr::exponent("1**1**1").is_ok());
     }
