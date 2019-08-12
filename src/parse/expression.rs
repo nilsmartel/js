@@ -1,6 +1,7 @@
 use crate::parse::{char_ws, fold_concat, not_followed, tag_ws};
 use nom::{
     branch::alt,
+    bytes::complete::tag,
     character::complete::char,
     sequence::{delimited, preceded, separated_pair},
     IResult,
@@ -58,8 +59,34 @@ enum MutationKind {
 }
 
 impl MutationKind {
-    parse(input: &str) -> IResult<&str, MutationKind> {
-
+    fn parse(input: &str) -> IResult<&str, MutationKind> {
+        use crate::parse::whitespace;
+        use MutationKind::*;
+        preceded(
+            whitespace,
+            alt((
+                tag("="),
+                tag("+="),
+                tag("-="),
+                tag("%="),
+                tag("*="),
+                tag("/="),
+            )),
+        )(input)
+        .map(|(i, r)| {
+            (
+                i,
+                match r {
+                    "=" => Assign,
+                    "+=" => AddAssign,
+                    "-=" => SubtractAssign,
+                    "%=" => ModAssign,
+                    "*=" => MulAssign,
+                    "/=" => DivAssign,
+                    _ => unreachable!(),
+                },
+            )
+        })
     }
 }
 
