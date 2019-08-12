@@ -39,6 +39,7 @@ pub enum Expr {
     Sub(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
+    Mod(Box<Expr>, Box<Expr>), // Implement
     Exponent(Box<Expr>, Box<Expr>),
     Not(Box<Expr>),
     Neg(Box<Expr>),
@@ -54,6 +55,12 @@ enum MutationKind {
     ModAssign,      // %=
     MulAssign,      // *=
     DivAssign,      // /=
+}
+
+impl MutationKind {
+    parse(input: &str) -> IResult<&str, MutationKind> {
+
+    }
 }
 
 impl Expr {
@@ -161,11 +168,16 @@ impl Expr {
     fn mul(input: &str) -> IResult<&str, Expr> {
         fold_concat(
             not_followed(char_ws('*'), char('*')),
-            Expr::preceding_sign,
+            Expr::modulo,
             |acc, e| Expr::Mul(acc.boxed(), e.boxed()),
         )(input)
     }
 
+    fn modulo(input: &str) -> IResult<&str, Expr> {
+        fold_concat(tag_ws("%"), Expr::preceding_sign, |acc, e| {
+            Expr::Mod(acc.boxed(), e.boxed())
+        })(input)
+    }
     fn preceding_sign(input: &str) -> IResult<&str, Expr> {
         if let Ok((input, _)) = char_ws('-')(input) {
             let (input, e) = Expr::exponent(input)?;
