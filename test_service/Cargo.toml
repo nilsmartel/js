@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 js = { path = ".." }
+rocket = "0.4.2"                    # Web framework for nightly with a focus on ease-of-use, expressibility, and speed. 
