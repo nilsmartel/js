@@ -1,16 +1,20 @@
 use crate::parse::*;
 use nom::bytes::complete::tag;
 use nom::IResult;
+
+#[derive(Debug)]
 pub struct Variable {
     identifier: String,
     assign: Option<Box<crate::parse::expression::Expr>>,
 }
 
+#[derive(Debug)]
 pub struct Function {
     identifier: String,
     arguments: Vec<String>,
     body: crate::parse::instruction::FunctionBody,
 }
+// TODO implement Parse for Functions
 
 impl Variable {
     pub fn parse(i: &str) -> IResult<&str, Variable> {
@@ -34,5 +38,21 @@ impl Variable {
                 },
             )),
         }
+    }
+}
+
+#[cfg(test)]
+mod variable_test {
+    use super::Variable;
+    #[test]
+    fn empty() {
+        let input = "let x";
+        assert!(Variable::parse(input).is_ok());
+    }
+
+    #[test]
+    fn assign() {
+        let input = "let xyz = 1 + 1 ";
+        assert!(Variable::parse(input).is_ok());
     }
 }

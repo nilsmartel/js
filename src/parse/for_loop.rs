@@ -11,6 +11,7 @@ use nom::{
     IResult,
 };
 
+#[derive(Debug)]
 pub struct ForLoop {
     condition: ForLoopCondition,
     body: FunctionBody,
@@ -35,6 +36,7 @@ impl ForLoop {
 /// for (let i=0; i<len; i++) { ... }
 /// for (let elem of array) { ... }
 /// ```
+#[derive(Debug)]
 enum ForLoopCondition {
     // for(;;)
     CStyle {
@@ -91,7 +93,7 @@ mod condition_test {
     #[test]
     fn for_loop() {
         let cases = vec![
-            "for (let i = 1; 1; 1) { <function body> }",
+            "for (let i = 1; 1; 1) { return 1 }",
             "for (let i = 1; 1; 1) 1",
         ];
 

@@ -7,6 +7,17 @@ use nom::{
     IResult,
 };
 
+#[cfg(test)]
+mod function_body_tests {
+    use super::FunctionBody;
+    #[test]
+    fn fn_body_1() {
+        let input = "";
+
+        assert!(FunctionBody::parse(input).is_ok());
+    }
+}
+
 ///
 /// Definitions
 ///
@@ -19,6 +30,7 @@ use nom::{
 /// function <ident> ( <list(',', <expr>)>) { ... }
 
 /// List of Variable definitions, expressions, if/else pairs, for/whiles and return statements
+#[derive(Debug)]
 pub struct FunctionBody {
     scope: Vec<Variable>,
     instructions: Vec<Statement>,
@@ -87,7 +99,7 @@ mod statement_tests {
     fn test_single_statement() {
         assert!(Statement::single_statement_body("return").is_ok());
         assert!(Statement::single_statement_body("  break").is_ok());
-        assert!(Statement::single_statement_body(" { <function body> } ").is_ok());
+        assert!(Statement::single_statement_body(" { return } ").is_ok());
     }
 
     #[test]
@@ -101,9 +113,9 @@ mod statement_tests {
     #[test]
     fn test_if() {
         let inputs = vec![
-            "if (1) { <function body> }",
+            "if (1) { return }",
             "\nif  \t( 1 )    break",
-            "if(1){<function body>}",
+            "if(1){ return }",
         ];
 
         for input in inputs {
@@ -114,6 +126,7 @@ mod statement_tests {
 
 /// Either an Expression, if/else pair, for/while loop or return statement
 /// Note that Mutations are expressions
+#[derive(Debug)]
 pub enum Statement {
     Return(Option<Box<Expr>>),
     If {
