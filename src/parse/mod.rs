@@ -7,3 +7,5 @@ mod scope;
 mod util;
 
 use util::*;
+
+pub use instruction::FunctionBody;
