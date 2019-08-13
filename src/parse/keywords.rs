@@ -13,17 +13,17 @@ pub fn is_keyword(input: &str) -> bool {
         "else",
         "function",
         "return",
-        "in",
+        "break",
         // following are not used yet
         "do",
         "switch",
         "typeof",
         "of",
+        "in",
         "const",
         "var",
         "class",
         "constructor",
-        "break",
     ]
     .contains(&input)
 }
