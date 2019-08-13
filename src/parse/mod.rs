@@ -6,4 +6,4 @@ mod obj;
 mod scope;
 mod util;
 
-pub use util::*;
+use util::*;
