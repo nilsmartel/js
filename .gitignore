@@ -2,3 +2,4 @@
 **/*.rs.bk
 push.sh
 README_template.sh
+.DS_Store
