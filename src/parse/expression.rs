@@ -1,4 +1,4 @@
-use crate::parse::{char_ws, fold_concat, not_followed, tag_ws};
+use crate::parse::{char_ws, fold_concat, not_followed, obj::Object, tag_ws};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -6,18 +6,6 @@ use nom::{
     sequence::{delimited, preceded, separated_pair},
     IResult,
 };
-
-#[derive(Debug)]
-pub struct Value(f64);
-impl Value {
-    pub fn parse(input: &str) -> IResult<&str, Value> {
-        char_ws('1')(input).map(|(i, _)| (i, Value(1.0)))
-    }
-
-    fn as_expr(self) -> Expr {
-        Expr::Value(self)
-    }
-}
 
 #[derive(Debug)]
 pub enum Expr {
@@ -44,7 +32,7 @@ pub enum Expr {
     Exponent(Box<Expr>, Box<Expr>),
     Not(Box<Expr>),
     Neg(Box<Expr>),
-    Value(Value),
+    Value(Object),
     // TODO bitshift
 }
 
@@ -227,7 +215,7 @@ impl Expr {
 
     fn value(input: &str) -> IResult<&str, Expr> {
         alt((delimited(char_ws('('), Expr::parse, char_ws(')')), |i| {
-            Value::parse(i).map(|(i, v)| (i, v.as_expr()))
+            Object::parse(i).map(|(i, v)| (i, v.as_expr()))
         }))(input)
     }
 }
