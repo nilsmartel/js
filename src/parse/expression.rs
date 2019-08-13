@@ -96,7 +96,7 @@ impl Expr {
     }
 
     pub fn parse(i: &str) -> IResult<&str, Expr> {
-        Expr::or(i)
+        Expr::elvis(i)
     }
 
     pub fn elvis(input: &str) -> IResult<&str, Expr> {
@@ -252,6 +252,11 @@ mod test {
     }
 
     #[test]
+    fn elvis_toplevel() {
+        assert!(Expr::parse("1==1? 1+1 : 1-1").is_ok());
+    }
+
+    #[test]
     fn sign_1() {
         assert!(Expr::preceding_sign("-1").is_ok());
     }
@@ -259,6 +264,11 @@ mod test {
     #[test]
     fn sign_2() {
         assert!(Expr::preceding_sign("!1").is_ok());
+    }
+
+    #[test]
+    fn sign_toplevel() {
+        assert!(Expr::parse("-1").is_ok());
     }
 
     #[test]
