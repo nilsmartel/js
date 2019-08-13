@@ -1,4 +1,4 @@
-use crate::parse::{char_ws, expression::Expr, for_loop::ForLoop, scope, scope::Variable, tag_ws};
+use crate::parse::{char_ws, expression::Expr, for_loop::ForLoop, scope::*, tag_ws};
 use nom::{
     branch::alt,
     combinator::opt,
@@ -33,39 +33,48 @@ mod function_body_tests {
 #[derive(Debug)]
 pub struct FunctionBody {
     scope: Vec<Variable>,
+    functions: Vec<Function>,
     instructions: Vec<Statement>,
 }
 
 impl FunctionBody {
     pub fn parse(input: &str) -> IResult<&str, FunctionBody> {
-        enum VarOrStatement {
+        enum FbItem {
             Var(Variable),
             Statement(Statement),
+            Function(Function),
         }
-        fn v_or_s(input: &str) -> IResult<&str, VarOrStatement> {
+        fn v_or_s(input: &str) -> IResult<&str, FbItem> {
             if let Ok((i, v)) = Variable::parse(input) {
-                return Ok((i, VarOrStatement::Var(v)));
+                return Ok((i, FbItem::Var(v)));
+            }
+
+            if let Ok((i, f)) = Function::parse(input) {
+                return Ok((i, FbItem::Function(f)));
             }
 
             let (i, s) = Statement::parse(input)?;
 
-            Ok((i, VarOrStatement::Statement(s)))
+            Ok((i, FbItem::Statement(s)))
         }
 
-        // TODO parse functions itself
         let (input, list) = many0(v_or_s)(input)?;
         let fb = list.into_iter().fold(
             FunctionBody {
                 scope: Vec::new(),
+                functions: Vec::new(),
                 instructions: Vec::new(),
             },
             |mut acc, vs| {
                 match vs {
-                    VarOrStatement::Var(v) => {
+                    FbItem::Var(v) => {
                         acc.scope.push(v);
                     }
-                    VarOrStatement::Statement(s) => {
+                    FbItem::Statement(s) => {
                         acc.instructions.push(s);
+                    }
+                    FbItem::Function(f) => {
+                        acc.functions.push(f);
                     }
                 };
 
@@ -240,6 +249,7 @@ impl Statement {
     fn into_function_body(self) -> FunctionBody {
         FunctionBody {
             scope: Vec::new(),
+            functions: Vec::new(),
             instructions: vec![self],
         }
     }
