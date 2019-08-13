@@ -10,8 +10,9 @@ All Structures and Parser can be found in `src/parse/*`
 
 ## Current Task
 -   Write Object Parser
--   Rewrite all parsers to *not* respect preceding whitespace
+
 ## TODO  (immediate)
+-   Rewrite all parsers to *not* respect preceding whitespace
 
 ## TODO
 - Write Parser
