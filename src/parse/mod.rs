@@ -8,4 +8,7 @@ mod util;
 
 use util::*;
 
-pub use instruction::FunctionBody;
+#[inline]
+pub fn parse(source_code: &str) -> nom::IResult<&str, instruction::FunctionBody> {
+    instruction::FunctionBody::parse(source_code)
+}
