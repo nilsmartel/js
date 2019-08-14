@@ -3,7 +3,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, none_of},
-    combinator::{map, not},
+    combinator::map,
     multi::many0,
     sequence::{delimited, preceded},
     IResult,
@@ -61,32 +61,29 @@ impl Object {
         )(input)
     }
 
-    fn parse_string(input: &str) -> IResult<&str, Object> {
-        map(
-            delimited(
-                char('"'),
-                map(
-                    many0(alt((
-                        preceded(
-                            char('\\'),
-                            alt((
-                                map(char('n'), |_| '\n'),
-                                map(char('t'), |_| '\t'),
-                                map(char('\\'), |_| '\\'),
-                                map(char('$'), |_| '$'),
-                                map(char('r'), |_| '\r'),
-                            )),
-                        ),
-                        none_of("\""),
-                    ))),
-                    |list| list.into_iter().collect::<String>(),
-                ),
-                char('"'),
-            ),
-            |s| Object::String(s),
-        )(input)
+    fn parse_string(input_base: &str) -> IResult<&str, Object> {
+        let (input, _) = char('"')(input_base)?;
+        let input: &[u8] = input.as_bytes();
 
-        //delimited(tag("${"), Expr::parse, char('}')),
+        let mut i = 0;
+        let mut s = String::new();
+        while input[i] != b'"' {
+            let c = input[i] as char;
+
+            match c {
+                '\\' => {
+                    i += 1;
+                    s.push(input[i] as char);
+                }
+                _ => {
+                    s.push(c);
+                }
+            }
+
+            i += 1;
+        }
+
+        Ok((&input_base[input.len()..], Object::String(s)))
     }
 
     pub fn as_expr(self) -> Expr {
@@ -107,14 +104,37 @@ mod test_obj {
     use super::Object;
 
     #[test]
+    fn parse_int() {
+        assert!(Object::parse_number("123").is_ok());
+    }
+
+    #[test]
+    fn parse_int_2() {
+        assert!(Object::parse_number("0o123").is_ok());
+    }
+
+    #[test]
+    fn parse_int_3() {
+        assert!(Object::parse_number("0x123").is_ok());
+    }
+
+    #[test]
+    fn parse_int_4() {
+        assert!(Object::parse_number("0b101").is_ok());
+    }
+
+    #[test]
+    fn parse_float() {
+        assert!(Object::parse_number("3.14151").is_ok());
+    }
+
+    #[test]
     fn parse_empty_string() {
-        let input = "\"\"";
-        assert!(Object::parse_string(input).is_ok())
+        assert!(Object::parse_string("\"\"").is_ok());
     }
 
     #[test]
     fn parse_string() {
-        let input = "\"Hello World\"";
-        assert!(Object::parse_string(input).is_ok());
+        assert!(Object::parse_string("\"Hello World\"").is_ok());
     }
 }
