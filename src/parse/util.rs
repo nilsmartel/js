@@ -80,13 +80,20 @@ pub fn ident(input: &str) -> IResult<&str, String> {
     use crate::parse::keywords::is_keyword;
     use nom::character::complete::alpha1;
 
-    let (rest, identifier) = alpha1(input)?; //.map(|(a, b)| (a, b.to_string()))?
+    let (rest, identifier) = dbg!(alpha1(input)?);
 
     if is_keyword(identifier) {
         return Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)));
     }
 
     Ok((rest, identifier.to_string()))
+}
+
+/// Recognize Identifiers,
+/// Escape keywords,
+/// Ignore Whitespace
+pub fn ident_ws(input: &str) -> IResult<&str, String> {
+    ignore_ws(ident)(input)
 }
 
 /// List of Elements, seperated by `sep` parser, might be empty
