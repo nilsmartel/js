@@ -80,7 +80,7 @@ pub fn ident(input: &str) -> IResult<&str, String> {
     use crate::parse::keywords::is_keyword;
     use nom::character::complete::alpha1;
 
-    let (rest, identifier) = dbg!(alpha1(input)?);
+    let (rest, identifier) = alpha1(input)?;
 
     if is_keyword(identifier) {
         return Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)));

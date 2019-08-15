@@ -1,10 +1,16 @@
-use crate::parse::{char_ws, expression::Expr, scope::Function, util::ident};
+use crate::parse::{
+    char_ws, concat,
+    expression::Expr,
+    ident_ws,
+    instruction::{FunctionBody, Statement},
+    tag_ws,
+};
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, none_of},
+    character::complete::char,
     combinator::map,
-    multi::{many0, separated_list},
+    multi::separated_list,
     sequence::{delimited, preceded, separated_pair},
     IResult,
 };
@@ -20,7 +26,10 @@ pub enum Object {
     String(String),
     Array(Vec<Expr>),
     Map(HashMap<String, Expr>),
-    Closure(Function),
+    Closure {
+        args: Vec<String>,
+        body: FunctionBody,
+    },
 }
 
 impl Object {
@@ -104,11 +113,22 @@ impl Object {
                 char('{'),
                 separated_list(
                     char_ws(','),
-                    separated_pair(ident, char_ws(':'), Expr::parse),
+                    separated_pair(ident_ws, char_ws(':'), Expr::parse),
                 ),
                 char('}'),
             ),
             |pairs: Vec<(String, Expr)>| Object::Map(pairs.into_iter().collect::<HashMap<_, _>>()),
+        )(input)
+    }
+
+    fn parse_closure(input: &str) -> IResult<&str, Object> {
+        use nom::sequence::tuple;
+        map(
+            tuple((
+                delimited(char('('), concat(char_ws(','), ident_ws), char_ws(')')),
+                preceded(tag_ws("=>"), Statement::single_statement_body),
+            )),
+            |(args, body)| Object::Closure { args, body },
         )(input)
     }
 
@@ -162,5 +182,10 @@ mod test_obj {
     #[test]
     fn parse_string() {
         assert!(Object::parse_string("\"Hello World\"").is_ok());
+    }
+
+    #[test]
+    fn parse_closure() {
+        assert!(Object::parse_closure("(a, b) => return").is_ok());
     }
 }
