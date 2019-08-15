@@ -36,7 +36,7 @@ impl Object {
     }
 
     fn parse_number(input: &str) -> IResult<&str, Object> {
-        use nom::character::complete::{digit1, hex_digit1, oct_digit1, one_of};
+        use nom::character::complete::{digit1, hex_digit1, oct_digit1};
         use nom::number::complete::double;
         // Integer parsing
         map(
@@ -53,6 +53,7 @@ impl Object {
                         map(preceded(tag("0b"), bin_digit1), |s| {
                             u64::from_str_radix(&s, 2).unwrap()
                         }),
+                        map(digit1, |s: &str| s.parse::<u64>().unwrap()),
                     )),
                     |num: u64| num as f64,
                 ),
