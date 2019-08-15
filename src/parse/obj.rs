@@ -1,11 +1,11 @@
-use crate::parse::{expression::Expr, scope::Function};
+use crate::parse::{char_ws, expression::Expr, scope::Function, util::ident};
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, none_of},
     combinator::map,
-    multi::many0,
-    sequence::{delimited, preceded},
+    multi::{many0, separated_list},
+    sequence::{delimited, preceded, separated_pair},
     IResult,
 };
 use std::collections::HashMap;
@@ -84,6 +84,31 @@ impl Object {
         }
 
         Ok((&input_base[input.len()..], Object::String(s)))
+    }
+
+    fn parse_array(input: &str) -> IResult<&str, Object> {
+        map(
+            delimited(
+                char('['),
+                separated_list(char_ws(','), Expr::parse),
+                char(']'),
+            ),
+            Object::Array,
+        )(input)
+    }
+
+    fn parse_map(input: &str) -> IResult<&str, Object> {
+        map(
+            delimited(
+                char('{'),
+                separated_list(
+                    char_ws(','),
+                    separated_pair(ident, char_ws(':'), Expr::parse),
+                ),
+                char('}'),
+            ),
+            |pairs: Vec<(String, Expr)>| Object::Map(pairs.into_iter().collect::<HashMap<_, _>>()),
+        )(input)
     }
 
     pub fn as_expr(self) -> Expr {
