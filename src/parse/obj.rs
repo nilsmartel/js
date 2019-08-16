@@ -153,7 +153,7 @@ fn bin_digit1(input: &str) -> IResult<&str, String> {
 }
 
 #[cfg(test)]
-mod test_obj {
+mod tests {
     use super::Object;
 
     #[test]

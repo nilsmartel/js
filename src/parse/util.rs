@@ -35,6 +35,12 @@ mod tests {
             Ok(("", vec!['Q', 'Q', 'Q', 'Q']))
         );
     }
+
+    #[test]
+    fn test_empty_concat() {
+        let i = "";
+        assert_eq!(concat(char_ws(','), char_ws('Q'))(i), Ok(("", vec![])));
+    }
 }
 
 /// Remove all whitespace, newlines, tabs etc.
@@ -98,14 +104,21 @@ pub fn ident_ws(input: &str) -> IResult<&str, String> {
 
 /// List of Elements, seperated by `sep` parser, might be empty
 /// Note that this parser will fail, if the sep parser suceeds and the following element parser
-/// fails
+/// fails.
+/// If no element is parsed, an empty Array will be returned
 pub fn concat<'a, T, Elem>(
     sep: impl Fn(&'a str) -> IResult<&'a str, T>,
     tag_elem: impl Fn(&'a str) -> IResult<&'a str, Elem>,
 ) -> impl Fn(&'a str) -> IResult<&'a str, Vec<Elem>> {
     move |input: &str| {
         let mut v: Vec<Elem> = Vec::new();
-        let (mut input, elem) = tag_elem(input)?;
+        let first = tag_elem(input);
+        let (mut input, elem) = if first.is_ok() {
+            first.unwrap()
+        } else {
+            return Ok((input, v));
+        };
+
         v.push(elem);
 
         loop {
