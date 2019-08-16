@@ -34,7 +34,14 @@ pub enum Object {
 
 impl Object {
     pub fn parse(input: &str) -> IResult<&str, Object> {
-        alt((Object::parse_bool, Object::parse_string))(input)
+        alt((
+            Object::parse_bool,
+            Object::parse_number,
+            Object::parse_string,
+            Object::parse_array,
+            Object::parse_map,
+            Object::parse_closure,
+        ))(input)
     }
 
     fn parse_bool(input: &str) -> IResult<&str, Object> {
@@ -187,5 +194,10 @@ mod test_obj {
     #[test]
     fn parse_closure() {
         assert!(Object::parse_closure("(a, b) => return").is_ok());
+    }
+
+    #[test]
+    fn parse_empty_closure() {
+        assert!(Object::parse_closure("() => return").is_ok());
     }
 }
