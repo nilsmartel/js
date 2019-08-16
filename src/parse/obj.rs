@@ -1,7 +1,7 @@
 use crate::parse::{
     char_ws, concat,
     expression::Expr,
-    ident_ws,
+    ident_ws, ignore_ws,
     instruction::{FunctionBody, Statement},
     tag_ws,
 };
@@ -34,14 +34,14 @@ pub enum Object {
 
 impl Object {
     pub fn parse(input: &str) -> IResult<&str, Object> {
-        alt((
+        ignore_ws(alt((
             Object::parse_bool,
             Object::parse_number,
             Object::parse_string,
             Object::parse_array,
             Object::parse_map,
             Object::parse_closure,
-        ))(input)
+        )))(input)
     }
 
     fn parse_bool(input: &str) -> IResult<&str, Object> {

@@ -122,9 +122,9 @@ mod statement_tests {
     #[test]
     fn test_if() {
         let inputs = vec![
-            "if (1) { return }",
+            "if (true) { return }",
             "\nif  \t( 1 )    break",
-            "if(1){ return }",
+            "if( false != true  ){ return }",
         ];
 
         for input in inputs {
