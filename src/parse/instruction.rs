@@ -1,6 +1,5 @@
 use crate::parse::{char_ws, expression::Expr, for_loop::ForLoop, scope::*, tag_ws};
 use nom::{
-    branch::alt,
     combinator::opt,
     multi::many0,
     sequence::{delimited, preceded},
@@ -15,6 +14,38 @@ mod function_body_tests {
         let input = "";
 
         assert!(FunctionBody::parse(input).is_ok());
+    }
+
+    #[test]
+    fn fn_body_2() {
+        let input = "let x";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn fn_body_3() {
+        let input = "
+            return 7+8
+            ";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn fn_body_4() {
+        let input = "
+            let x = 7
+            
+            function sqare(x) {
+                return x*x
+            }
+            ";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
     }
 }
 
@@ -99,13 +130,13 @@ mod statement_tests {
     }
 
     #[test]
-    fn test_break_and_continue() {
+    fn break_and_continue() {
         assert!(Statement::parse_break("  break").is_ok());
         assert!(Statement::parse_continue("\n  continue ").is_ok());
     }
 
     #[test]
-    fn test_single_statement() {
+    fn single_statement() {
         assert!(Statement::single_statement_body("return").is_ok());
         assert!(Statement::single_statement_body("  break").is_ok());
         assert!(Statement::single_statement_body(" { return } ").is_ok());
