@@ -1,5 +1,5 @@
 use crate::parse::{
-    char_ws, fold_concat, identifier::Identifier, not_followed, obj::Object, tag_ws,
+    char_ws, fold_concat, identifier::Identifier, ignore_ws, not_followed, obj::Object, tag_ws,
 };
 use nom::{
     branch::alt,
@@ -89,7 +89,7 @@ impl Expr {
     }
 
     pub fn parse(i: &str) -> IResult<&str, Expr> {
-        Expr::elvis(i)
+        ignore_ws(Expr::elvis)(i)
     }
 
     pub fn elvis(input: &str) -> IResult<&str, Expr> {
@@ -219,11 +219,11 @@ impl Expr {
     }
 
     fn value(input: &str) -> IResult<&str, Expr> {
-        alt((
+        ignore_ws(alt((
             map(Identifier::parse, |ident| Expr::Identifier(ident)),
-            delimited(char_ws('('), Expr::parse, char_ws(')')),
+            delimited(char('('), Expr::parse, char_ws(')')),
             map(Object::parse, Object::as_expr),
-        ))(input)
+        )))(input)
     }
 }
 
@@ -275,5 +275,23 @@ mod test {
     #[test]
     fn exponent() {
         assert!(Expr::exponent("1**1**1").is_ok());
+    }
+
+    #[test]
+    fn ident() {
+        let result = dbg!(Expr::value("x"));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn ident_toplevel() {
+        let result = dbg!(Expr::parse("x"));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn ident_expr_toplevel() {
+        let result = dbg!(Expr::parse("x*x*x"));
+        assert!(result.is_ok());
     }
 }

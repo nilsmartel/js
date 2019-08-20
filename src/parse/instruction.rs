@@ -202,7 +202,7 @@ pub enum Statement {
 impl Statement {
     pub fn parse(input: &str) -> IResult<&str, Statement> {
         use nom::branch::alt;
-        dbg!(alt((
+        alt((
             Statement::parse_if_block,
             Statement::parse_return,
             Statement::parse_while,
@@ -210,7 +210,7 @@ impl Statement {
             Statement::parse_break,
             Statement::parse_continue,
             Statement::parse_expression,
-        ))(input))
+        ))(input)
     }
 
     fn parse_for(input: &str) -> IResult<&str, Statement> {

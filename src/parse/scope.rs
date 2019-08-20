@@ -71,7 +71,7 @@ impl Function {
             ),
         )(input)?;
 
-        let (input, body) = FunctionBody::parse(input)?;
+        let (input, body) = delimited(char_ws('{'), FunctionBody::parse, char_ws('}'))(input)?;
 
         Ok((
             input,
@@ -88,13 +88,24 @@ impl Function {
 mod function_test {
     use super::Function;
     #[test]
-    fn function_test() {
+    fn function_one() {
         let input = "
             function one(x, y, z) {
                 return 1
             }
             ";
 
-        assert!(Function::parse(input).is_ok());
+        let result = dbg!(Function::parse(input));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn function_square() {
+        let input = "
+            function square(x) {
+                return x*x
+            }";
+        let result = dbg!(Function::parse(input));
+        assert!(result.is_ok());
     }
 }
