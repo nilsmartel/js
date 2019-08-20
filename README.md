@@ -10,8 +10,9 @@ All Structures and Parser can be found in `src/parse/*`
 
 ## TODO
 - Write Parser
--   Rewrite all parsers to *not* respect preceding whitespace
+- Better Tests
 - Create VM Specification
 - Write ByteCode parser
 - Implement VM
 - Evalute
+
