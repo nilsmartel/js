@@ -38,11 +38,19 @@ mod function_body_tests {
     fn fn_body_4() {
         let input = "
             let x = 7
-            
+
             function sqare(x) {
                 return x*x
             }
             ";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn fn_body_5() {
+        let input = "x*x";
         let result = dbg!(FunctionBody::parse(input));
 
         assert!(result.is_ok());
@@ -75,7 +83,7 @@ impl FunctionBody {
             Statement(Statement),
             Function(Function),
         }
-        fn v_or_s(input: &str) -> IResult<&str, FbItem> {
+        fn parse_fb_item(input: &str) -> IResult<&str, FbItem> {
             if let Ok((i, v)) = Variable::parse(input) {
                 return Ok((i, FbItem::Var(v)));
             }
@@ -89,7 +97,7 @@ impl FunctionBody {
             Ok((i, FbItem::Statement(s)))
         }
 
-        let (input, list) = many0(v_or_s)(input)?;
+        let (input, list) = many0(parse_fb_item)(input)?;
         let fb = list.into_iter().fold(
             FunctionBody {
                 scope: Vec::new(),
@@ -189,19 +197,12 @@ impl Statement {
         use nom::branch::alt;
         alt((
             Statement::parse_if_block,
-            alt((
-                Statement::parse_return,
-                alt((
-                    Statement::parse_while,
-                    alt((
-                        Statement::parse_for,
-                        alt((
-                            Statement::parse_break,
-                            alt((Statement::parse_continue, Statement::parse_expression)),
-                        )),
-                    )),
-                )),
-            )),
+            Statement::parse_return,
+            Statement::parse_while,
+            Statement::parse_for,
+            Statement::parse_break,
+            Statement::parse_continue,
+            Statement::parse_expression,
         ))(input)
     }
 
