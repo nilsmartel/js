@@ -1,8 +1,11 @@
-use crate::parse::{char_ws, fold_concat, not_followed, obj::Object, tag_ws};
+use crate::parse::{
+    char_ws, fold_concat, identifier::Identifier, not_followed, obj::Object, tag_ws,
+};
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::char,
+    combinator::map,
     sequence::{delimited, preceded, separated_pair},
     IResult,
 };
@@ -32,6 +35,7 @@ pub enum Expr {
     Exponent(Box<Expr>, Box<Expr>),
     Not(Box<Expr>),
     Neg(Box<Expr>),
+    Identifier(Identifier),
     Value(Object),
     // TODO bitshift
 }
@@ -46,6 +50,7 @@ enum MutationKind {
     DivAssign,      // /=
 }
 
+// TODO use
 impl MutationKind {
     fn parse(input: &str) -> IResult<&str, MutationKind> {
         use crate::parse::whitespace;
@@ -214,9 +219,11 @@ impl Expr {
     }
 
     fn value(input: &str) -> IResult<&str, Expr> {
-        alt((delimited(char_ws('('), Expr::parse, char_ws(')')), |i| {
-            Object::parse(i).map(|(i, v)| (i, v.as_expr()))
-        }))(input)
+        alt((
+            map(Identifier::parse, |ident| Expr::Identifier(ident)),
+            delimited(char_ws('('), Expr::parse, char_ws(')')),
+            map(Object::parse, Object::as_expr),
+        ))(input)
     }
 }
 

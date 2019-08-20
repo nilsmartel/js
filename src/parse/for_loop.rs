@@ -6,7 +6,6 @@ use crate::parse::{
     tag_ws,
 };
 use nom::{
-    combinator::opt,
     sequence::{delimited, preceded, separated_pair},
     IResult,
 };

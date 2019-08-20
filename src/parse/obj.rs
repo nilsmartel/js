@@ -1,7 +1,8 @@
 use crate::parse::{
     char_ws, concat,
     expression::Expr,
-    ident_ws, ignore_ws,
+    identifier::Identifier,
+    ignore_ws,
     instruction::{FunctionBody, Statement},
     tag_ws,
 };
@@ -25,9 +26,9 @@ pub enum Object {
     Number(f64),
     String(String),
     Array(Vec<Expr>),
-    Map(HashMap<String, Expr>),
+    Map(HashMap<Identifier, Expr>),
     Closure {
-        args: Vec<String>,
+        args: Vec<Identifier>,
         body: FunctionBody,
     },
 }
@@ -120,11 +121,13 @@ impl Object {
                 char('{'),
                 separated_list(
                     char_ws(','),
-                    separated_pair(ident_ws, char_ws(':'), Expr::parse),
+                    separated_pair(Identifier::parse_ws, char_ws(':'), Expr::parse),
                 ),
                 char('}'),
             ),
-            |pairs: Vec<(String, Expr)>| Object::Map(pairs.into_iter().collect::<HashMap<_, _>>()),
+            |pairs: Vec<(Identifier, Expr)>| {
+                Object::Map(pairs.into_iter().collect::<HashMap<_, _>>())
+            },
         )(input)
     }
 
@@ -132,7 +135,11 @@ impl Object {
         use nom::sequence::tuple;
         map(
             tuple((
-                delimited(char('('), concat(char_ws(','), ident_ws), char_ws(')')),
+                delimited(
+                    char('('),
+                    concat(char_ws(','), Identifier::parse_ws),
+                    char_ws(')'),
+                ),
                 preceded(tag_ws("=>"), Statement::single_statement_body),
             )),
             |(args, body)| Object::Closure { args, body },

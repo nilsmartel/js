@@ -1,20 +1,22 @@
-use crate::{parse::instruction::FunctionBody, parse::*};
-use nom::bytes::complete::tag;
+use crate::{
+    parse::*,
+    parse::{expression::Expr, identifier::Identifier, instruction::FunctionBody},
+};
 use nom::IResult;
 
 #[derive(Debug)]
 pub struct Variable {
-    identifier: String,
-    assign: Option<Box<crate::parse::expression::Expr>>,
+    identifier: Identifier,
+    assign: Option<Box<Expr>>,
 }
 
 impl Variable {
     pub fn parse(i: &str) -> IResult<&str, Variable> {
-        let (i, _) = ignore_ws(tag("let"))(i)?;
-        let (i, identifier) = ignore_ws(ident)(i)?;
+        let (i, _) = tag_ws("let")(i)?;
+        let (i, identifier) = Identifier::parse_ws(i)?;
 
         use nom::sequence::preceded;
-        match preceded(ignore_ws(tag("=")), ignore_ws(expression::Expr::parse))(i) {
+        match preceded(tag_ws("="), ignore_ws(Expr::parse))(i) {
             Ok((rest, expr)) => Ok((
                 rest,
                 Variable {
@@ -51,8 +53,8 @@ mod variable_test {
 
 #[derive(Debug)]
 pub struct Function {
-    identifier: String,
-    arguments: Vec<String>,
+    identifier: Identifier,
+    arguments: Vec<Identifier>,
     body: FunctionBody,
 }
 
@@ -60,11 +62,11 @@ impl Function {
     pub fn parse(input: &str) -> IResult<&str, Function> {
         use nom::sequence::{delimited, pair, preceded};
 
-        let (input, (identifier, args)) = pair(
-            preceded(tag_ws("function"), ignore_ws(ident)),
+        let (input, (identifier, arguments)) = pair(
+            preceded(tag_ws("function"), Identifier::parse_ws),
             delimited(
                 char_ws('('),
-                concat(char_ws(','), ignore_ws(ident)),
+                concat(char_ws(','), Identifier::parse_ws),
                 char_ws(')'),
             ),
         )(input)?;
@@ -74,8 +76,8 @@ impl Function {
         Ok((
             input,
             Function {
-                identifier: identifier.into(),
-                arguments: args,
+                identifier,
+                arguments,
                 body,
             },
         ))

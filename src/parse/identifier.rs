@@ -3,6 +3,7 @@ use crate::parse::*;
 use nom::character::complete::alpha1;
 use nom::IResult;
 
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone, Hash)]
 pub struct Identifier(String);
 
 impl Identifier {
