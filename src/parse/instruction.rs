@@ -151,6 +151,13 @@ mod statement_tests {
     }
 
     #[test]
+    fn expression() {
+        assert!(Statement::parse_expression("x*x").is_ok());
+        assert!(Statement::parse_expression("1+1").is_ok());
+        assert!(Statement::parse_expression("!x?y:z").is_ok());
+    }
+
+    #[test]
     fn test_while() {
         let input = "
             while (1) break
@@ -195,7 +202,7 @@ pub enum Statement {
 impl Statement {
     pub fn parse(input: &str) -> IResult<&str, Statement> {
         use nom::branch::alt;
-        alt((
+        dbg!(alt((
             Statement::parse_if_block,
             Statement::parse_return,
             Statement::parse_while,
@@ -203,7 +210,7 @@ impl Statement {
             Statement::parse_break,
             Statement::parse_continue,
             Statement::parse_expression,
-        ))(input)
+        ))(input))
     }
 
     fn parse_for(input: &str) -> IResult<&str, Statement> {
@@ -286,6 +293,7 @@ impl Statement {
         }
     }
 
+    // TODO refactor into FunctionBody::single_statement_body
     /// May either be a single statement, or an functionbody wrapped in curly brackets
     /// ```js
     /// return something

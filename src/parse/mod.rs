@@ -1,5 +1,6 @@
 mod expression;
 mod for_loop;
+mod identifier;
 mod instruction;
 mod keywords;
 mod obj;
