@@ -75,6 +75,20 @@ impl Action {
     }
 }
 
+#[cfg(test)]
+mod action_test {
+    use super::Action;
+    #[test]
+    fn get() {
+        let input = "[314]";
+        let result = dbg!(Action::parse(input));
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+}
+
 // TODO use
 #[derive(Debug)]
 enum MutationKind {
@@ -304,6 +318,26 @@ mod test {
     fn ident_1() {
         let input = " a . b . c";
         let result = Expr::ident(input);
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+
+    #[test]
+    fn ident_2() {
+        let input = "a()";
+        let result = Expr::ident(input);
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+
+    #[test]
+    fn ident_3() {
+        let input = "a.b.c[7]";
+        let result = dbg!(Expr::ident(input));
 
         assert!(result.is_ok());
 
