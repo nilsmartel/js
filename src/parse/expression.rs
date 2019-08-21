@@ -1,18 +1,23 @@
 use crate::parse::{
-    char_ws, fold_concat, identifier::Identifier, ignore_ws, not_followed, obj::Object, tag_ws,
+    char_ws, concat, fold_concat, identifier::Identifier, ignore_ws, not_followed, obj::Object,
+    tag_ws,
 };
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::char,
     combinator::map,
-    sequence::{delimited, preceded, separated_pair},
+    sequence::{delimited, pair, preceded, separated_pair},
     IResult,
 };
 
 #[derive(Debug)]
 pub enum Expr {
-    Mutate(MutationKind, Box<Expr>),
+    Mutate {
+        variable: Identifier,
+        mutation: MutationKind,
+        assign: Box<Expr>,
+    },
     Elvis {
         condition: Box<Expr>,
         case_true: Box<Expr>,
@@ -35,11 +40,42 @@ pub enum Expr {
     Exponent(Box<Expr>, Box<Expr>),
     Not(Box<Expr>),
     Neg(Box<Expr>),
-    Identifier(Identifier),
+    Identifier {
+        path: Vec<Identifier>,
+        action: Option<Action>,
+    },
     Value(Object),
     // TODO bitshift
 }
 
+#[derive(Debug)]
+pub enum Action {
+    Get { index: Box<Expr> },
+    Call { arguments: Vec<Expr> },
+}
+
+impl Action {
+    fn parse(input: &str) -> IResult<&str, Action> {
+        ignore_ws(alt((
+            map(
+                delimited(
+                    char('('),
+                    concat(char_ws('.'), ignore_ws(Expr::parse)),
+                    char_ws(')'),
+                ),
+                |arguments| Action::Call { arguments },
+            ),
+            map(
+                delimited(char('['), ignore_ws(Expr::parse), char_ws(']')),
+                |expr| Action::Get {
+                    index: expr.boxed(),
+                },
+            ),
+        )))(input)
+    }
+}
+
+// TODO use
 #[derive(Debug)]
 enum MutationKind {
     Assign,         // =
@@ -89,6 +125,19 @@ impl Expr {
     }
 
     pub fn parse(i: &str) -> IResult<&str, Expr> {
+        if let Ok((rest, (variable, mutation))) = pair(Identifier::parse_ws, MutationKind::parse)(i)
+        {
+            let (rest, assign) = map(Expr::parse, Box::new)(rest)?;
+            return Ok((
+                rest,
+                Expr::Mutate {
+                    variable,
+                    mutation,
+                    assign,
+                },
+            ));
+        }
+
         ignore_ws(Expr::elvis)(i)
     }
 
@@ -220,16 +269,46 @@ impl Expr {
 
     fn value(input: &str) -> IResult<&str, Expr> {
         ignore_ws(alt((
-            map(Identifier::parse, |ident| Expr::Identifier(ident)),
+            Expr::ident,
             delimited(char('('), Expr::parse, char_ws(')')),
             map(Object::parse, Object::as_expr),
         )))(input)
+    }
+
+    // TODO include abc.ps() & abc.ps & abc.ps[<expr>]
+    fn ident(input: &str) -> IResult<&str, Expr> {
+        let (rest, list) = concat(char_ws('.'), Identifier::parse_ws)(input)?;
+
+        if list.len() == 0 {
+            return Err(nom::Err::Error((
+                rest,
+                nom::error::ErrorKind::SeparatedList,
+            )));
+        }
+
+        let (rest, action) = if let Ok((rest, action)) = Action::parse(rest) {
+            (rest, Some(action))
+        } else {
+            (rest, None)
+        };
+
+        Ok((rest, Expr::Identifier { path: list, action }))
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn ident_1() {
+        let input = " a . b . c";
+        let result = Expr::ident(input);
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
 
     #[test]
     fn expression_1() {
