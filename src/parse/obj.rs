@@ -9,9 +9,9 @@ use crate::parse::{
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::char,
+    character::complete::{char, none_of},
     combinator::map,
-    multi::separated_list,
+    multi::{many0, separated_list},
     sequence::{delimited, preceded, separated_pair},
     IResult,
 };
@@ -79,29 +79,12 @@ impl Object {
         )(input)
     }
 
-    fn parse_string(input_base: &str) -> IResult<&str, Object> {
-        let (input, _) = char('"')(input_base)?;
-        let input: &[u8] = input.as_bytes();
-
-        let mut i = 0;
-        let mut s = String::new();
-        while input[i] != b'"' {
-            let c = input[i] as char;
-
-            match c {
-                '\\' => {
-                    i += 1;
-                    s.push(input[i] as char);
-                }
-                _ => {
-                    s.push(c);
-                }
-            }
-
-            i += 1;
-        }
-
-        Ok((&input_base[input.len()..], Object::String(s)))
+    // TODO this is flawed
+    fn parse_string(input: &str) -> IResult<&str, Object> {
+        map(
+            delimited(char_ws('"'), many0(none_of("\"")), char('"')),
+            |list: Vec<char>| Object::String(list.into_iter().collect()),
+        )(input)
     }
 
     fn parse_array(input: &str) -> IResult<&str, Object> {
@@ -118,12 +101,12 @@ impl Object {
     fn parse_map(input: &str) -> IResult<&str, Object> {
         map(
             delimited(
-                char('{'),
+                char_ws('{'),
                 separated_list(
                     char_ws(','),
                     separated_pair(Identifier::parse_ws, char_ws(':'), Expr::parse),
                 ),
-                char('}'),
+                char_ws('}'),
             ),
             |pairs: Vec<(Identifier, Expr)>| {
                 Object::Map(pairs.into_iter().collect::<HashMap<_, _>>())
@@ -162,6 +145,19 @@ fn bin_digit1(input: &str) -> IResult<&str, String> {
 #[cfg(test)]
 mod tests {
     use super::Object;
+
+    #[test]
+    fn parse_map() {
+        let input = "{
+            name: \"Steve\",
+            position: {
+                x: 1,
+                y: 1
+            }
+        }";
+        let result = dbg!(Object::parse_map(input));
+        assert_eq!("", result.unwrap().0);
+    }
 
     #[test]
     fn parse_int() {

@@ -63,10 +63,65 @@ mod toplevel_tests {
     }
 
     #[test]
+    fn assignment() {
+        let input = "
+            let player = 7
+        ";
+
+        let result = dbg!(parse(input));
+
+        assert!(result.is_ok());
+
+        // Assert that only whitespace characters remain
+        let (rest, _) = result.unwrap();
+        let (left, _) = util::whitespace(rest).unwrap();
+        assert_eq!("", left);
+    }
+
+    #[test]
+    fn object() {
+        let input = "
+            let player = {
+                name: \"Steve\",
+                position: {
+                    x: 0,
+                    y: 0
+                },
+                health: 100
+            }
+        ";
+
+        let result = dbg!(parse(input));
+
+        assert!(result.is_ok());
+
+        // Assert that only whitespace characters remain
+        let (rest, _) = result.unwrap();
+        let (left, _) = util::whitespace(rest).unwrap();
+        assert_eq!("", left);
+    }
+
+    #[test]
     fn body() {
         let input = "
             function main() {
-            window.setTimeout(onUpdate)
+                window.setTimeout(onUpdate, 1000)
+            }
+
+            let iteration = 0
+
+            let player = {
+                name: \"Steve\",
+                position: {
+                    x: 0,
+                    y: 0
+                },
+                health: 100
+            }
+
+            function onUpdate() {
+
+                iteration += 1
             }
         ";
 
