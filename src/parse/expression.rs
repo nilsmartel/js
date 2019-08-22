@@ -60,7 +60,7 @@ impl Action {
             map(
                 delimited(
                     char('('),
-                    concat(char_ws('.'), ignore_ws(Expr::parse)),
+                    concat(char_ws(','), ignore_ws(Expr::parse)),
                     char_ws(')'),
                 ),
                 |arguments| Action::Call { arguments },
@@ -87,11 +87,40 @@ mod action_test {
 
         assert_eq!("", result.unwrap().0);
     }
+
+    #[test]
+    fn call_1() {
+        let input = "()";
+        let result = dbg!(Action::parse(input));
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+
+    #[test]
+    fn call_2() {
+        let input = "(1)";
+        let result = dbg!(Action::parse(input));
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+
+    #[test]
+    fn call_3() {
+        let input = "(1, 2)";
+        let result = dbg!(Action::parse(input));
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
 }
 
-// TODO use
 #[derive(Debug)]
-enum MutationKind {
+pub enum MutationKind {
     Assign,         // =
     AddAssign,      // +=
     SubtractAssign, // -=
@@ -289,7 +318,6 @@ impl Expr {
         )))(input)
     }
 
-    // TODO include abc.ps() & abc.ps & abc.ps[<expr>]
     fn ident(input: &str) -> IResult<&str, Expr> {
         let (rest, list) = concat(char_ws('.'), Identifier::parse_ws)(input)?;
 
@@ -313,6 +341,36 @@ impl Expr {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn mutation_1() {
+        let input = "a = b";
+        let result = Expr::parse(input);
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+
+    #[test]
+    fn mutation_2() {
+        let input = "first += second += third";
+        let result = Expr::parse(input);
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+
+    #[test]
+    fn mutation_3() {
+        let input = "one += two /= 12";
+        let result = dbg!(Expr::parse(input));
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
 
     #[test]
     fn ident_1() {
@@ -351,7 +409,9 @@ mod test {
 
     #[test]
     fn expression_2() {
-        assert!(Expr::parse("1 + 1 || 1 == 1 ^ 1 != 1/1 - 1").is_ok());
+        let result = Expr::parse("1 + 1 || 1 == 1 ^ 1 != 1/1 - 1");
+        assert!(result.is_ok());
+        assert_eq!("", result.unwrap().0)
     }
 
     #[test]

@@ -56,4 +56,27 @@ mod toplevel_tests {
         let (left, _) = util::whitespace(rest).unwrap();
         assert_eq!("", left);
     }
+
+    #[test]
+    fn empty_body() {
+        assert_eq!("", parse("{}").unwrap().0)
+    }
+
+    #[test]
+    fn body() {
+        let input = "
+            function main() {
+            window.setTimeout(onUpdate)
+            }
+        ";
+
+        let result = dbg!(parse(input));
+
+        assert!(result.is_ok());
+
+        // Assert that only whitespace characters remain
+        let (rest, _) = result.unwrap();
+        let (left, _) = util::whitespace(rest).unwrap();
+        assert_eq!("", left);
+    }
 }
