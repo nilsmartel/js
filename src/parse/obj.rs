@@ -4,6 +4,7 @@ use crate::parse::{
     identifier::Identifier,
     ignore_ws,
     instruction::{FunctionBody, Statement},
+    string_template::StringTemplate,
     tag_ws,
 };
 use nom::{
@@ -24,7 +25,7 @@ use std::collections::HashMap;
 pub enum Object {
     Boolean(bool),
     Number(f64),
-    String(String),
+    String(StringTemplate),
     Array(Vec<Expr>),
     Map(HashMap<Identifier, Expr>),
     Closure {
@@ -79,12 +80,8 @@ impl Object {
         )(input)
     }
 
-    // TODO this is flawed
     fn parse_string(input: &str) -> IResult<&str, Object> {
-        map(
-            delimited(char_ws('"'), many0(none_of("\"")), char('"')),
-            |list: Vec<char>| Object::String(list.into_iter().collect()),
-        )(input)
+        map(StringTemplate::parse, Object::String)(input)
     }
 
     fn parse_array(input: &str) -> IResult<&str, Object> {

@@ -5,6 +5,7 @@ mod instruction;
 mod keywords;
 mod obj;
 mod scope;
+mod string_template;
 mod util;
 
 use util::*;

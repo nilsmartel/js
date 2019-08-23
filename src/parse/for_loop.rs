@@ -82,8 +82,9 @@ impl ForLoopCondition {
     }
 }
 
-mod condition_test {
+mod tests {
     use super::*;
+
     #[test]
     fn c_style_condition() {
         assert!(ForLoopCondition::parse_c_style("let x = 1; 1; 1").is_ok());
