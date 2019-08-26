@@ -50,6 +50,8 @@ pub enum Expr {
 
 #[derive(Debug)]
 pub enum Action {
+    Increase,
+    Decrease,
     Get { index: Box<Expr> },
     Call { arguments: Vec<Expr> },
 }
@@ -57,6 +59,8 @@ pub enum Action {
 impl Action {
     fn parse(input: &str) -> IResult<&str, Action> {
         ignore_ws(alt((
+            map(tag("++"), |_| Action::Increase),
+            map(tag("--"), |_| Action::Decrease),
             map(
                 delimited(
                     char('('),
