@@ -133,7 +133,6 @@ pub enum MutationKind {
     DivAssign,      // /=
 }
 
-// TODO use
 impl MutationKind {
     fn parse(input: &str) -> IResult<&str, MutationKind> {
         use crate::parse::whitespace;
