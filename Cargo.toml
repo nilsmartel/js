@@ -6,3 +6,5 @@ edition = "2018"
 
 [dependencies]
 nom = "5.0.0"
+gc = "0.3.3"                 # Tracing garbage collector plugin for Rust. Not ready for use yet, please see README
+gc_derive = "0.3.2"          # Garbage collector derive plugin for rust-gc
