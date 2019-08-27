@@ -11,10 +11,10 @@ pub enum Instruction {
     Store(StackAddress), // Store relative to SP
     Load(StackAddress),  // Load relative to SP
     Push(Object),
-    Get,                      // first.second or a['b'] or a[12]
-    Call,                     // Calling Closures
-    Jump(InstructionAddress), //
-    JumpConditional,
+    Get,                            // first.second or a['b'] or a[12]
+    Jump,                           // Calling Closures
+    JumpStatic(InstructionAddress), //
+    JumpConditional(InstructionAddress),
     Add,
     Subtract,
     Mod,
