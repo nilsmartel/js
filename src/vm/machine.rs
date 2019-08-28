@@ -8,9 +8,9 @@ pub struct VirtualMachine {
     stack: Vec<Object>,
     instructions: Vec<Instruction>,
     currentFp: InstructionAddress,
-    currentSp: StackAddress,
+    // currentSp: StackAddress,
     functionPointerStack: Vec<InstructionAddress>,
-    stackPointerStack: Vec<StackAddress>,
+    // stackPointerStack: Vec<StackAddress>,
 }
 
 const INITIAL_STACK_SIZE: usize = 256;
@@ -20,9 +20,15 @@ impl VirtualMachine {
             stack: Vec::with_capacity(INITIAL_STACK_SIZE),
             instructions,
             currentFp: 0,
-            currentSp: 0,
+            // currentSp: 0,
             functionPointerStack: Vec::new(),
-            stackPointerStack: Vec::new(),
+            // stackPointerStack: Vec::new(),
         }
+    }
+
+    fn op_add(&mut self) {
+        let right = self.stack.pop();
+        let left = self.stack.pop();
+        // stack.push(left + right)
     }
 }
