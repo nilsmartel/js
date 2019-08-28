@@ -32,7 +32,7 @@ impl Object {
         }
     }
 }
-
+/*
 impl Add for Object {
     type Output = Object;
 
@@ -44,4 +44,4 @@ impl Add for Object {
             (s, String(o)) => String(Rc::new(format!("{}{}", s.to_string(), o))),
         }
     }
-}
+} */
