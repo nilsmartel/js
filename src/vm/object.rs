@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::ops::{Add, Sub};
 use std::rc::Rc;
 
+pub type RcString = Rc<String>;
+
 // TODO use GC
 #[derive(Debug, Clone)]
 struct Gc<T>(T);
@@ -39,6 +41,31 @@ impl Upcast<bool> for Object {
         match self {
             Boolean(b) => Ok(b),
             _ => Err(()),
+        }
+    }
+}
+
+impl Upcast<f64> for Object {
+    fn upcast(self) -> Result<f64, ()> {
+        use Object::*;
+        match self {
+            Boolean(b) => Ok(if b { 1.0 } else { 0.0 }),
+            Number(n) => Ok(n),
+            _ => Err(()),
+        }
+    }
+}
+
+impl Upcast<RcString> for Object {
+    fn upcast(self) -> Result<RcString, ()> {
+        use Object::*;
+        match self {
+            Boolean(b) => Ok(Rc::new(format!("{}", b))),
+            Number(n) => Ok(Rc::new(format!("{}", n))),
+            String(s) => Ok(s),
+            Array(_) => Ok(Rc::new("[array]".to_string())),
+            Map(_) => Ok(Rc::new("{object}".to_string())),
+            Closure { .. } => Ok(Rc::new("function".to_string())),
         }
     }
 }
