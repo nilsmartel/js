@@ -32,6 +32,17 @@ impl Object {
         }
     }
 }
+
+impl Upcast<bool> for Object {
+    fn upcast(self) -> Result<bool, ()> {
+        use Object::*;
+        match self {
+            Boolean(b) => Ok(b),
+            _ => Err(()),
+        }
+    }
+}
+
 /*
 impl Add for Object {
     type Output = Object;
@@ -45,3 +56,7 @@ impl Add for Object {
         }
     }
 } */
+
+trait Upcast<T> {
+    fn upcast(self) -> Result<T, ()>;
+}
