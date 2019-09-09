@@ -43,12 +43,62 @@ impl Object {
     }
 }
 
+impl std::ops::BitAnd for Object {
+    type Output = Object;
+    fn bitand(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => Number((a as i64 & b as i64) as f64),
+            _ => Undefined,
+        }
+    }
+}
+
+impl std::ops::BitXor for Object {
+    type Output = Object;
+    fn bitxor(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => Number((a as i64 ^ b as i64) as f64),
+            _ => Undefined,
+        }
+    }
+}
+
+impl std::ops::BitOr for Object {
+    type Output = Object;
+    fn bitor(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => Number((a as i64 | b as i64) as f64),
+            _ => Undefined,
+        }
+    }
+}
+
 impl Sub for Object {
     type Output = Object;
     fn sub(self, o: Object) -> Object {
         use Object::*;
         match (self, o) {
             (Number(a), Number(b)) => Number(a + b),
+            _ => Undefined,
+        }
+    }
+}
+
+impl std::ops::Rem for Object {
+    type Output = Object;
+    fn rem(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => {
+                if b.abs() == 0.0 {
+                    Undefined
+                } else {
+                    Number(a % b)
+                }
+            }
             _ => Undefined,
         }
     }
