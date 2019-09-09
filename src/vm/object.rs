@@ -20,8 +20,7 @@ pub enum Object {
     Array(Gc<Vec<Object>>),
     Map(HashMap<RcString, Object>),
     Closure {
-        // TODO why Rc?
-        enviroment: Rc<Vec<Object>>,
+        enviroment: Gc<Vec<Object>>,
         function: InstructionAddress,
     },
 }
@@ -39,6 +38,17 @@ impl Object {
                 "length" => return Number(s.0.len() as f64), // TODO Iterator etc.
                 _ => Undefined,
             },
+            _ => Undefined,
+        }
+    }
+}
+
+impl Sub for Object {
+    type Output = Object;
+    fn sub(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => Number(a + b),
             _ => Undefined,
         }
     }
@@ -87,7 +97,6 @@ impl Upcast<f64> for Object {
     fn upcast(self) -> Result<f64, ()> {
         use Object::*;
         match self {
-            Boolean(b) => Ok(if b { 1.0 } else { 0.0 }),
             Number(n) => Ok(n),
             _ => Err(()),
         }
