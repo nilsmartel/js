@@ -17,15 +17,20 @@ pub enum Instruction {
     JumpConditional(InstructionAddress),
     Add,
     Subtract,
-    Mod,
+    Mod, // impl
     Div,
     Mul,
-    And,
-    Or,
-    Equal,
-    NotEqual,
-    SmallerEqual,
-    GreaterEqual,
+    And,               // impl
+    Or,                // impl
+    Equal,             // impl
+    NotEqual,          // impl
+    SmallerEqual,      // imol
+    GreaterEqual,      // impl
+    BitwiseShiftLeft,  // impl
+    BitwiseShiftRight, // impl
+    BitwiseAnd,        // impl
+    BitwiseOr,         // impl
+    BitwiseXor,        // impl
     Not,
     Negation,
 }

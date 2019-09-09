@@ -54,6 +54,34 @@ impl Sub for Object {
     }
 }
 
+impl std::ops::Mul for Object {
+    type Output = Object;
+    fn mul(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => Number(a * b),
+            _ => Undefined,
+        }
+    }
+}
+
+impl std::ops::Div for Object {
+    type Output = Object;
+    fn div(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => {
+                if b.abs() == 0.0 {
+                    Undefined
+                } else {
+                    Number(a / b)
+                }
+            }
+            _ => Undefined,
+        }
+    }
+}
+
 impl Add for Object {
     type Output = Object;
     fn add(self, o: Object) -> Object {
@@ -78,6 +106,28 @@ impl Add for Object {
                     Undefined
                 }
             }
+            _ => Undefined,
+        }
+    }
+}
+
+impl std::ops::Not for Object {
+    type Output = Object;
+    fn not(self) -> Object {
+        use Object::*;
+        match self {
+            Boolean(b) => Boolean(!b),
+            _ => Undefined,
+        }
+    }
+}
+
+impl std::ops::Neg for Object {
+    type Output = Object;
+    fn neg(self) -> Object {
+        use Object::*;
+        match self {
+            Number(n) => Number(-n),
             _ => Undefined,
         }
     }
