@@ -43,6 +43,31 @@ impl Object {
     }
 }
 
+impl std::cmp::PartialEq for Object {
+    fn eq(&self, o: &Object) -> bool {
+        use Object::*;
+
+        match (self, o) {
+            (Undefined, Undefined) => true,
+            (Null, Null) => true,
+            (Boolean(a), Boolean(b)) => a == b,
+            (Number(a), Number(b)) => a == b,
+            (String(a), String(b)) => a == b,
+            (Array(a), Array(b)) => {
+                for (a, b) in a.0.iter().zip(b.0.iter()) {
+                    if a != b {
+                        return false;
+                    }
+                }
+
+                true
+            }
+            // TODO map comparision?
+            _ => false,
+        }
+    }
+}
+
 impl std::ops::BitAnd for Object {
     type Output = Object;
     fn bitand(self, o: Object) -> Object {
