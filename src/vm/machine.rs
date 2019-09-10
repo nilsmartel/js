@@ -36,10 +36,14 @@ impl VirtualMachine {
         match instruction {
             StoreGlobal(addr) => {
                 let elem = self.stack.pop().expect(EMPTY_STACK);
-                self.stack[addr] = elem;
+                self.stack[addr as usize] = elem;
             }
             LoadGlobal(addr) => {
-                self.stack.push(self.stack[addr].clone());
+                self.stack.push(self.stack[addr as usize].clone());
+            }
+            Store(addr) => {
+                let elem = self.stack.pop().expect(EMPTY_STACK);
+                self.stack[(self.currentSp + addr) as usize] = elem;
             }
 
             _ => panic!("unimplemented Statement reached"),

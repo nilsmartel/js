@@ -1,7 +1,19 @@
 use crate::vm::Object;
 
 /// Address in Variable Stack
-pub type StackAddress = usize;
+/// It's an isize instead of an usize.
+/// This goes against intuition, but this way one can use negatives
+/// in order to describe the operation
+/// ```
+/// let b = 7;
+/// a - b
+/// ```
+/// as
+/// ```
+/// let b = -7;
+/// a + b
+/// ```
+pub type StackAddress = isize;
 /// Address in Function Stack
 pub type InstructionAddress = usize;
 
