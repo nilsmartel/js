@@ -41,6 +41,19 @@ impl Object {
             _ => Undefined,
         }
     }
+
+    pub fn deep_copy(&self) -> Object {
+        use Object::*;
+        match self {
+            Array(a) => Array(Gc(a.0.iter().cloned().collect())),
+            Map(m) => Object::Map(
+                m.iter()
+                    .map(|(key, value)| (key.clone(), value.deep_copy()))
+                    .collect(),
+            ),
+            _ => self.clone(),
+        }
+    }
 }
 
 impl std::cmp::PartialEq for Object {

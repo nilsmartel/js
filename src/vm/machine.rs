@@ -41,6 +41,7 @@ impl VirtualMachine {
             LoadGlobal(addr) => {
                 self.stack.push(self.stack[addr].clone());
             }
+
             _ => panic!("unimplemented Statement reached"),
         }
     }
