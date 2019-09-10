@@ -79,6 +79,28 @@ impl std::ops::BitAnd for Object {
     }
 }
 
+impl std::ops::Shr for Object {
+    type Output = Object;
+    fn shr(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => Number(((a as i64) >> b as i64) as f64),
+            _ => Undefined,
+        }
+    }
+}
+
+impl std::ops::Shl for Object {
+    type Output = Object;
+    fn shl(self, o: Object) -> Object {
+        use Object::*;
+        match (self, o) {
+            (Number(a), Number(b)) => Number(((a as i64) << b as i64) as f64),
+            _ => Undefined,
+        }
+    }
+}
+
 impl std::ops::BitXor for Object {
     type Output = Object;
     fn bitxor(self, o: Object) -> Object {
