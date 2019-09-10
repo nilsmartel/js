@@ -32,7 +32,7 @@ impl ForLoop {
 /// Represents different kinds of for loop conditions
 /// e.g.
 /// ```js
-/// for (let i=0; i<len; i++) { ... }
+/// for (let i=0; i<len; i+= 2) { ... }
 /// for (let elem of array) { ... }
 /// ```
 #[derive(Debug)]

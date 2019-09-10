@@ -39,7 +39,7 @@ mod toplevel_tests {
     #[test]
     fn for_loop() {
         let input = "
-            for (let i=0; i<12; i++) {
+            for (let i=0; i<12; i+=1) {
                 if (i ** 2 && 123) {
                     continue
                 } else {

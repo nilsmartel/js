@@ -6,8 +6,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::char,
-    combinator::map,
-    condition::opt,
+    combinator::{map, opt},
     sequence::{delimited, pair, preceded, separated_pair},
     IResult,
 };
