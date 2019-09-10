@@ -23,6 +23,7 @@ use std::collections::HashMap;
 /// just an Building Block
 #[derive(Debug)]
 pub enum Object {
+    Undefined,
     Boolean(bool),
     Number(f64),
     String(StringTemplate),
@@ -37,6 +38,7 @@ pub enum Object {
 impl Object {
     pub fn parse(input: &str) -> IResult<&str, Object> {
         ignore_ws(alt((
+            map(tag("undefined"), |_| Object::Undefined),
             Object::parse_bool,
             Object::parse_number,
             Object::parse_string,
