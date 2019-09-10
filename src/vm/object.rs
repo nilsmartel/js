@@ -25,7 +25,7 @@ pub enum Object {
 
 impl Object {
     // TODO collect all prototype functions
-    fn prototype_get(self, key: GcString) -> Object {
+    pub fn prototype_get(self, key: GcString) -> Object {
         use Object::*;
         match &self {
             String(s) => match key.as_str() {
@@ -37,6 +37,13 @@ impl Object {
                 _ => Undefined,
             },
             _ => Undefined,
+        }
+    }
+
+    pub fn bitwise_not(self) -> Object {
+        match &self {
+            Object::Number(n) => Object::Number(!(*n as i64) as f64),
+            _ => Object::Undefined,
         }
     }
 
