@@ -5,6 +5,7 @@ pub type StackAddress = usize;
 /// Address in Function Stack
 pub type InstructionAddress = usize;
 
+#[derive(Debug, Clone)]
 pub enum Instruction {
     StoreGlobal(StackAddress),
     LoadGlobal(StackAddress),
