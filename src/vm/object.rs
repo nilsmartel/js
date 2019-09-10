@@ -1,24 +1,22 @@
 use crate::vm::instruction::InstructionAddress;
+use gc::Gc;
 use std::collections::HashMap;
 use std::ops::{Add, Sub};
-use std::rc::Rc;
 
-pub type RcString = Rc<String>;
-
-// TODO use GC
-#[derive(Debug, Clone)]
-struct Gc<T>(T);
+pub type GcString = Gc<String>;
 
 /// Garbage Collected JavaScript Object
-#[derive(Debug, Clone)]
+#[derive(Debug, Finalize, Trace, Clone)]
 pub enum Object {
     Undefined,
     Null,
     Boolean(bool),
     Number(f64),
-    String(Rc<String>),
+    String(GcString),
+    // TODO this should be mutable
     Array(Gc<Vec<Object>>),
-    Map(HashMap<RcString, Object>),
+    // TODO this should be mutable
+    Map(HashMap<GcString, Object>),
     Closure {
         enviroment: Gc<Vec<Object>>,
         function: InstructionAddress,
@@ -27,15 +25,15 @@ pub enum Object {
 
 impl Object {
     // TODO collect all prototype functions
-    fn prototype_get(self, key: RcString) -> Object {
+    fn prototype_get(self, key: GcString) -> Object {
         use Object::*;
-        match self {
+        match &self {
             String(s) => match key.as_str() {
                 "length" => return Number(s.len() as f64), // TODO Iterator etc.
                 _ => Undefined,
             },
             Array(s) => match key.as_str() {
-                "length" => return Number(s.0.len() as f64), // TODO Iterator etc.
+                "length" => return Number(s.len() as f64), // TODO Iterator etc.
                 _ => Undefined,
             },
             _ => Undefined,
@@ -45,7 +43,7 @@ impl Object {
     pub fn deep_copy(&self) -> Object {
         use Object::*;
         match self {
-            Array(a) => Array(Gc(a.0.iter().cloned().collect())),
+            Array(a) => Array(Gc::new(a.iter().cloned().collect())),
             Map(m) => Object::Map(
                 m.iter()
                     .map(|(key, value)| (key.clone(), value.deep_copy()))
@@ -67,7 +65,7 @@ impl std::cmp::PartialEq for Object {
             (Number(a), Number(b)) => a == b,
             (String(a), String(b)) => a == b,
             (Array(a), Array(b)) => {
-                for (a, b) in a.0.iter().zip(b.0.iter()) {
+                for (a, b) in a.iter().zip(b.iter()) {
                     if a != b {
                         return false;
                     }
@@ -196,16 +194,16 @@ impl Add for Object {
     type Output = Object;
     fn add(self, o: Object) -> Object {
         use Object::*;
-        match (self, o) {
+        match (&self, &o) {
             (String(a), second) => {
                 // unwrapping is safe, Upcastpcasting to string always works
-                let b: RcString = second.upcast().unwrap();
-                String(Rc::new(format!("{}{}", a, b)))
+                let b: GcString = second.upcast().unwrap();
+                String(Gc::new(format!("{}{}", a, b)))
             }
             (first, String(b)) => {
                 // unwrapping is safe, Upcastpcasting to string always works
-                let a: RcString = first.upcast().unwrap();
-                String(Rc::new(format!("{}{}", a, b)))
+                let a: GcString = first.upcast().unwrap();
+                String(Gc::new(format!("{}{}", a, b)))
             }
             (Number(a), second) => {
                 let b: Result<f64, ()> = second.upcast();
@@ -244,41 +242,41 @@ impl std::ops::Neg for Object {
 }
 
 impl Upcast<bool> for Object {
-    fn upcast(self) -> Result<bool, ()> {
+    fn upcast(&self) -> Result<bool, ()> {
         use Object::*;
         match self {
-            Boolean(b) => Ok(b),
+            Boolean(b) => Ok(*b),
             _ => Err(()),
         }
     }
 }
 
 impl Upcast<f64> for Object {
-    fn upcast(self) -> Result<f64, ()> {
+    fn upcast(&self) -> Result<f64, ()> {
         use Object::*;
         match self {
-            Number(n) => Ok(n),
+            Number(n) => Ok(*n),
             _ => Err(()),
         }
     }
 }
 
-impl Upcast<RcString> for Object {
-    fn upcast(self) -> Result<RcString, ()> {
+impl Upcast<GcString> for Object {
+    fn upcast(&self) -> Result<GcString, ()> {
         use Object::*;
         match self {
-            Undefined => Ok(Rc::new("undefined".to_string())),
-            Null => Ok(Rc::new("null".to_string())),
-            Boolean(b) => Ok(Rc::new(format!("{}", b))),
-            Number(n) => Ok(Rc::new(format!("{}", n))),
-            String(s) => Ok(s),
-            Array(_) => Ok(Rc::new("[array]".to_string())),
-            Map(_) => Ok(Rc::new("{object}".to_string())),
-            Closure { .. } => Ok(Rc::new("function".to_string())),
+            Undefined => Ok(Gc::new("undefined".to_string())),
+            Null => Ok(Gc::new("null".to_string())),
+            Boolean(b) => Ok(Gc::new(format!("{}", b))),
+            Number(n) => Ok(Gc::new(format!("{}", n))),
+            String(s) => Ok(s.clone()),
+            Array(_) => Ok(Gc::new("[array]".to_string())),
+            Map(_) => Ok(Gc::new("{object}".to_string())),
+            Closure { .. } => Ok(Gc::new("function".to_string())),
         }
     }
 }
 
 trait Upcast<T> {
-    fn upcast(self) -> Result<T, ()>;
+    fn upcast(&self) -> Result<T, ()>;
 }
