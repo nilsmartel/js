@@ -316,10 +316,17 @@ impl Expr {
     }
 
     fn ident(input: &str) -> IResult<&str, Expr> {
-        map(
-            concat(char_ws('.'), pair(Identifier::parse_ws, opt(Action::parse))),
-            Expr::Identifier,
-        )(input)
+        let (rest, list) =
+            concat(char_ws('.'), pair(Identifier::parse_ws, opt(Action::parse)))(input)?;
+
+        if list.len() == 0 {
+            Err(nom::Err::Error((
+                rest,
+                nom::error::ErrorKind::SeparatedList,
+            )))
+        } else {
+            Ok((rest, Expr::Identifier(list)))
+        }
     }
 }
 
