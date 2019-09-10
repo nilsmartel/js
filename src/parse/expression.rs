@@ -6,7 +6,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::char,
-    combinator::map,
+    combinator::{map, opt},
     sequence::{delimited, pair, preceded, separated_pair},
     IResult,
 };
@@ -40,18 +40,13 @@ pub enum Expr {
     Exponent(Box<Expr>, Box<Expr>),
     Not(Box<Expr>),
     Neg(Box<Expr>),
-    Identifier {
-        path: Vec<Identifier>,
-        action: Option<Action>,
-    },
+    Identifier(Vec<(Identifier, Option<Action>)>),
     Value(Object),
     // TODO bitshift
 }
 
 #[derive(Debug)]
 pub enum Action {
-    Increase,
-    Decrease,
     Get { index: Box<Expr> },
     Call { arguments: Vec<Expr> },
 }
@@ -59,8 +54,6 @@ pub enum Action {
 impl Action {
     fn parse(input: &str) -> IResult<&str, Action> {
         ignore_ws(alt((
-            map(tag("++"), |_| Action::Increase),
-            map(tag("--"), |_| Action::Decrease),
             map(
                 delimited(
                     char('('),
@@ -293,6 +286,7 @@ impl Expr {
             Expr::Mod(acc.boxed(), e.boxed())
         })(input)
     }
+
     fn preceding_sign(input: &str) -> IResult<&str, Expr> {
         if let Ok((input, _)) = char_ws('-')(input) {
             let (input, e) = Expr::exponent(input)?;
@@ -322,22 +316,17 @@ impl Expr {
     }
 
     fn ident(input: &str) -> IResult<&str, Expr> {
-        let (rest, list) = concat(char_ws('.'), Identifier::parse_ws)(input)?;
+        let (rest, list) =
+            concat(char_ws('.'), pair(Identifier::parse_ws, opt(Action::parse)))(input)?;
 
         if list.len() == 0 {
-            return Err(nom::Err::Error((
+            Err(nom::Err::Error((
                 rest,
                 nom::error::ErrorKind::SeparatedList,
-            )));
-        }
-
-        let (rest, action) = if let Ok((rest, action)) = Action::parse(rest) {
-            (rest, Some(action))
+            )))
         } else {
-            (rest, None)
-        };
-
-        Ok((rest, Expr::Identifier { path: list, action }))
+            Ok((rest, Expr::Identifier(list)))
+        }
     }
 }
 
@@ -388,6 +377,16 @@ mod test {
     #[test]
     fn ident_2() {
         let input = "a()";
+        let result = Expr::ident(input);
+
+        assert!(result.is_ok());
+
+        assert_eq!("", result.unwrap().0);
+    }
+
+    #[test]
+    fn ident_4() {
+        let input = "a().b()";
         let result = Expr::ident(input);
 
         assert!(result.is_ok());
