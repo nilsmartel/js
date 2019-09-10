@@ -45,7 +45,65 @@ impl VirtualMachine {
                 let elem = self.stack.pop().expect(EMPTY_STACK);
                 self.stack[(self.currentSp + addr) as usize] = elem;
             }
+            Load(addr) => {
+                self.stack
+                    .push(self.stack[(self.currentSp + addr) as usize].clone());
+            }
+            Add => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left + right)
+            }
+            Sub => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left - right)
+            }
+            Rem => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left % right)
+            }
+            Div => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left / right)
+            }
+            Mul => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left * right)
+            }
 
+            BitwiseShiftLeft => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left << right)
+            }
+            BitwiseShiftRight => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left >> right)
+            }
+            BitwiseAnd => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left & right)
+            }
+            BitwiseOr => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left | right)
+            }
+            BitwiseXor => {
+                let right = self.stack.pop().expect(EMPTY_STACK);
+                let left = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(left ^ right)
+            }
+            BitwiseNot => {
+                let elem = self.stack.pop().expect(EMPTY_STACK);
+                self.stack.push(elem.bitwise_not())
+            }
             _ => panic!("unimplemented Statement reached"),
         }
     }

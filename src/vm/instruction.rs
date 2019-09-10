@@ -13,8 +13,12 @@ use crate::vm::Object;
 /// let b = -7;
 /// a + b
 /// ```
+///
+/// This also helps keeing track of the difference between Stack and Function Pointers internally
 pub type StackAddress = isize;
+
 /// Address in Function Stack
+/// Should be an Unsigned Type, since only absolute addresses get referenced
 pub type InstructionAddress = usize;
 
 #[derive(Debug, Clone)]
@@ -29,7 +33,7 @@ pub enum Instruction {
     JumpStatic(InstructionAddress), //
     JumpConditional(InstructionAddress),
     Add,
-    Subtract,
+    Sub,
     Rem,
     Div,
     Mul,
@@ -44,6 +48,7 @@ pub enum Instruction {
     BitwiseAnd,
     BitwiseOr,
     BitwiseXor,
+    BitwiseNot,
     Not,
     Negation,
 }
