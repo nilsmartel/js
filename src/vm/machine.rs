@@ -49,6 +49,12 @@ impl VirtualMachine {
                 self.stack
                     .push(self.stack[(self.currentSp + addr) as usize].clone());
             }
+            Get => {
+                let key = self.stack.pop().expect(EMPTY_STACK);
+                let obj = self.stack.pop().expect(EMPTY_STACK);
+
+                self.stack.push(obj.get(key));
+            }
             Add => {
                 let right = self.stack.pop().expect(EMPTY_STACK);
                 let left = self.stack.pop().expect(EMPTY_STACK);
@@ -103,8 +109,7 @@ impl VirtualMachine {
             BitwiseNot => {
                 let elem = self.stack.pop().expect(EMPTY_STACK);
                 self.stack.push(elem.bitwise_not())
-            }
-            _ => panic!("unimplemented Statement reached"),
+            } // _ => panic!("unimplemented Statement reached"),
         }
     }
 }

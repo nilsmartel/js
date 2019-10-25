@@ -248,6 +248,18 @@ impl std::ops::Neg for Object {
     }
 }
 
+impl Object {
+    pub fn get(&self, index: Object) -> Object {
+        use Object::*;
+        match (self, index) {
+            (Array(a), Number(i)) => a[i as usize],
+            (Map(m), String(key)) => m[&key],
+            (x, String(s)) => x.prototype_get(s),
+            _ => Object::Undefined,
+        }
+    }
+}
+
 impl Upcast<bool> for Object {
     fn upcast(&self) -> Result<bool, ()> {
         use Object::*;
