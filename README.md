@@ -18,9 +18,6 @@ let sayHello = () => {
 ```
 
 ```rust
-Ok(
-    (
-        "",
         FunctionBody {
             scope: [
                 Variable {
@@ -70,9 +67,7 @@ Ok(
             ],
             functions: [],
             instructions: [],
-        },
-    ),
-)
+        }
 ```
 
 ## Current Task
