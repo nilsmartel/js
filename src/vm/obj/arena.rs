@@ -1,4 +1,4 @@
-struct Arena<T> {
+pub struct Arena<T> {
     objects: Vec<T>,
     free_blocks: Vec<usize>,
 }
@@ -24,5 +24,9 @@ impl<T> Arena<T> {
         }
 
         self.free_blocks.push(index);
+    }
+
+    pub fn objects(&self) -> &Vec<T> {
+        &self.objects
     }
 }
