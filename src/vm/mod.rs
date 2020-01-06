@@ -1,5 +1,6 @@
 mod instruction;
 mod machine;
+mod obj;
 mod object;
 
 pub use instruction::Instruction;

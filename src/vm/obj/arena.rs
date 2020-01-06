@@ -1,20 +1,3 @@
-mod arena;
-
-use std::rc::Rc;
-
-enum Value {
-    Boolean(bool),
-    String(Rc<String>),
-    Number(f64),
-    Reference(usize),
-    // FunctionPointer(usize),
-}
-
-enum Object {
-    Array(Vec<Object>),
-    Class(std::collections::HashMap<String, Object>),
-}
-
 struct Arena {
     objects: Vec<Object>,
     free_blocks: Vec<usize>,
