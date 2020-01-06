@@ -1,12 +1,14 @@
 use crate::vm::{
     instruction::{InstructionAddress, StackAddress},
-    Instruction, Object,
+    obj::{Arena, Object},
+    Instruction,
 };
 
 const EMPTY_STACK: &'static str = "Expected Item on Stack";
 
 /// Virtual Stack Machine to interpret Instructions
 pub struct VirtualMachine {
+    arena: Arena<Object>,
     stack: Vec<Object>,
     instructions: Vec<Instruction>,
     currentFp: InstructionAddress,
@@ -19,6 +21,7 @@ const INITIAL_STACK_SIZE: usize = 256;
 impl VirtualMachine {
     pub fn new(instructions: Vec<Instruction>) -> VirtualMachine {
         VirtualMachine {
+            arena: Arena::new(),
             stack: Vec::with_capacity(INITIAL_STACK_SIZE),
             instructions,
             currentFp: 0,

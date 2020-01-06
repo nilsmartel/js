@@ -1,10 +1,10 @@
 mod arena;
-use arena::Arena;
+pub use arena::Arena;
 
 use std::rc::Rc;
 
 #[derive(Clone, Debug)]
-enum Value {
+pub enum Value {
     Undefined,
     Null,
     Boolean(bool),
@@ -25,7 +25,7 @@ impl Value {
     }
 }
 
-enum Object {
-    Array(Vec<Object>),
-    Class(std::collections::HashMap<String, Object>),
+pub enum Object {
+    Array(Vec<Value>),
+    Class(std::collections::HashMap<String, Value>),
 }

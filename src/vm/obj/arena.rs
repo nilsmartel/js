@@ -4,6 +4,13 @@ pub struct Arena<T> {
 }
 
 impl<T> Arena<T> {
+    pub fn new() -> Arena<T> {
+        Arena {
+            objects: Vec::new(),
+            free_blocks: Vec::new(),
+        }
+    }
+
     pub fn push(&mut self, o: T) -> usize {
         if let Some(index) = self.free_blocks.pop() {
             self.objects[index] = o;

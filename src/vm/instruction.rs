@@ -37,12 +37,12 @@ pub enum Instruction {
     Rem,
     Div,
     Mul,
-    And,          // impl
-    Or,           // impl
-    Equal,        // impl
-    NotEqual,     // impl
-    SmallerEqual, // imol
-    GreaterEqual, // impl
+    And,
+    Or,
+    Equal,
+    NotEqual,
+    SmallerEqual,
+    GreaterEqual,
     BitwiseShiftLeft,
     BitwiseShiftRight,
     BitwiseAnd,
