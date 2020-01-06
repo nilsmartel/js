@@ -1,10 +1,10 @@
-struct Arena {
-    objects: Vec<Object>,
+struct Arena<T> {
+    objects: Vec<T>,
     free_blocks: Vec<usize>,
 }
 
-impl Arena {
-    fn push(&mut self, o: Object) -> usize {
+impl<T> Arena<T> {
+    pub fn push(&mut self, o: T) -> usize {
         if let Some(index) = self.free_blocks.pop() {
             self.objects[index] = o;
             index
@@ -15,7 +15,7 @@ impl Arena {
         }
     }
 
-    unsafe fn free(&mut self, index: usize) {
+    pub fn free(&mut self, index: usize) {
         assert!(index < self.objects.len());
 
         if self.objects.len() == index + 1 {
