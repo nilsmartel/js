@@ -1,6 +1,6 @@
 use crate::vm::{
     instruction::{InstructionAddress, StackAddress},
-    obj::{Arena, Object},
+    obj::{Arena, Object, Value},
     Instruction,
 };
 
@@ -9,7 +9,7 @@ const EMPTY_STACK: &'static str = "Expected Item on Stack";
 /// Virtual Stack Machine to interpret Instructions
 pub struct VirtualMachine {
     arena: Arena<Object>,
-    stack: Vec<Object>,
+    stack: Vec<Value>,
     instructions: Vec<Instruction>,
     currentFp: InstructionAddress,
     currentSp: StackAddress,
@@ -17,9 +17,9 @@ pub struct VirtualMachine {
     stackPointerStack: Vec<StackAddress>,
 }
 
-const INITIAL_STACK_SIZE: usize = 256;
 impl VirtualMachine {
     pub fn new(instructions: Vec<Instruction>) -> VirtualMachine {
+        const INITIAL_STACK_SIZE: usize = 256;
         VirtualMachine {
             arena: Arena::new(),
             stack: Vec::with_capacity(INITIAL_STACK_SIZE),
@@ -38,11 +38,13 @@ impl VirtualMachine {
         use Instruction::*;
         match instruction {
             StoreGlobal(addr) => {
+                let addr = addr as usize;
                 let elem = self.stack.pop().expect(EMPTY_STACK);
-                self.stack[addr as usize] = elem;
+                self.stack[addr] = elem;
             }
             LoadGlobal(addr) => {
-                self.stack.push(self.stack[addr as usize].clone());
+                let addr = addr as usize;
+                self.stack.push(self.stack[addr].clone());
             }
             Store(addr) => {
                 let elem = self.stack.pop().expect(EMPTY_STACK);
@@ -61,58 +63,9 @@ impl VirtualMachine {
             Add => {
                 let right = self.stack.pop().expect(EMPTY_STACK);
                 let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left + right)
+                self.stack.push(left.add(right, &mut self.arena));
             }
-            Sub => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left - right)
-            }
-            Rem => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left % right)
-            }
-            Div => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left / right)
-            }
-            Mul => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left * right)
-            }
-
-            BitwiseShiftLeft => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left << right)
-            }
-            BitwiseShiftRight => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left >> right)
-            }
-            BitwiseAnd => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left & right)
-            }
-            BitwiseOr => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left | right)
-            }
-            BitwiseXor => {
-                let right = self.stack.pop().expect(EMPTY_STACK);
-                let left = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(left ^ right)
-            }
-            BitwiseNot => {
-                let elem = self.stack.pop().expect(EMPTY_STACK);
-                self.stack.push(elem.bitwise_not())
-            } // _ => panic!("unimplemented Statement reached"),
+            op => unimplemented!("Operatio {:#?} not implemented", op),
         }
     }
 }
