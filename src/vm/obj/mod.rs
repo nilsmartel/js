@@ -8,7 +8,7 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub enum Object {
     Array(Vec<Value>),
-    Class(std::collections::HashMap<String, Value>),
+    Map(std::collections::HashMap<String, Value>),
 }
 
 #[derive(Clone, Debug)]
