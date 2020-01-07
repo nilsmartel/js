@@ -1,3 +1,4 @@
+use crate::vm::instruction::InstructionAddress;
 mod arena;
 mod upcast;
 pub use arena::Arena;
@@ -9,6 +10,10 @@ use std::rc::Rc;
 pub enum Object {
     Array(Vec<Value>),
     Map(std::collections::HashMap<String, Value>),
+    Closure {
+        enviroment: Vec<Value>,
+        function_pointer: InstructionAddress,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -19,7 +24,7 @@ pub enum Value {
     String(Rc<String>),
     Number(f64),
     Reference(usize),
-    FunctionPointer(usize),
+    FunctionPointer(InstructionAddress),
 }
 
 impl Value {
