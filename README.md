@@ -74,6 +74,7 @@ This small JavaScript code will yield this enormous [AST](https://en.wikipedia.o
 ```
 
 ## Current Task
+- Implement Bytecode compilation
 - Implement VM
 
 ## TODO
