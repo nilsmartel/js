@@ -17,6 +17,9 @@ let sayHello = () => {
 }
 ```
 
+This small JavaScript code will yield this enormous [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree):
+
+
 ```rust
         FunctionBody {
             scope: [
