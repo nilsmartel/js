@@ -1,14 +1,16 @@
-mod expression;
-mod for_loop;
-mod identifier;
-mod instruction;
-mod keywords;
-mod obj;
-mod scope;
-mod string_template;
+pub mod expression;
+pub mod for_loop;
+pub mod identifier;
+pub mod instruction;
+pub mod keywords;
+pub mod obj;
+pub mod scope;
+pub mod string_template;
 mod util;
 
 use util::*;
+
+pub type Ast = instruction::FunctionBody;
 
 #[inline]
 pub fn parse(source_code: &str) -> nom::IResult<&str, instruction::FunctionBody> {

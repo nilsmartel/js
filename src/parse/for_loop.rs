@@ -36,7 +36,7 @@ impl ForLoop {
 /// for (let elem of array) { ... }
 /// ```
 #[derive(Debug)]
-enum ForLoopCondition {
+pub enum ForLoopCondition {
     // for(;;)
     CStyle {
         // This type of JavaScript only allows let as start of for loops

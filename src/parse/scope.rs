@@ -6,8 +6,8 @@ use nom::IResult;
 
 #[derive(Debug)]
 pub struct Variable {
-    identifier: Identifier,
-    assign: Option<Box<Expr>>,
+    pub identifier: Identifier,
+    pub assign: Option<Box<Expr>>,
 }
 
 impl Variable {
@@ -53,9 +53,9 @@ mod variable_test {
 
 #[derive(Debug)]
 pub struct Function {
-    identifier: Identifier,
-    arguments: Vec<Identifier>,
-    body: FunctionBody,
+    pub identifier: Identifier,
+    pub arguments: Vec<Identifier>,
+    pub body: FunctionBody,
 }
 
 impl Function {

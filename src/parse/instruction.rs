@@ -5,58 +5,6 @@ use nom::{
     sequence::{delimited, preceded},
     IResult,
 };
-
-#[cfg(test)]
-mod function_body_tests {
-    use super::FunctionBody;
-    #[test]
-    fn fn_body_1() {
-        let input = "";
-
-        assert!(FunctionBody::parse(input).is_ok());
-    }
-
-    #[test]
-    fn fn_body_2() {
-        let input = "let x";
-        let result = dbg!(FunctionBody::parse(input));
-
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn fn_body_3() {
-        let input = "
-            return 7+8
-            ";
-        let result = dbg!(FunctionBody::parse(input));
-
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn fn_body_4() {
-        let input = "
-            let x = 7
-
-            function sqare(x) {
-                return x*x
-            }
-            ";
-        let result = dbg!(FunctionBody::parse(input));
-
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn fn_body_5() {
-        let input = "x*x";
-        let result = dbg!(FunctionBody::parse(input));
-
-        assert!(result.is_ok());
-    }
-}
-
 ///
 /// Definitions
 ///
@@ -71,9 +19,9 @@ mod function_body_tests {
 /// List of Variable definitions, expressions, if/else pairs, for/whiles and return statements
 #[derive(Debug)]
 pub struct FunctionBody {
-    scope: Vec<Variable>,
-    functions: Vec<Function>,
-    instructions: Vec<Statement>,
+    pub scope: Vec<Variable>,
+    pub functions: Vec<Function>,
+    pub instructions: Vec<Statement>,
 }
 
 impl FunctionBody {
@@ -311,5 +259,56 @@ impl Statement {
         } else {
             delimited(char_ws('{'), FunctionBody::parse, char_ws('}'))(input)
         }
+    }
+}
+
+#[cfg(test)]
+mod function_body_tests {
+    use super::FunctionBody;
+    #[test]
+    fn fn_body_1() {
+        let input = "";
+
+        assert!(FunctionBody::parse(input).is_ok());
+    }
+
+    #[test]
+    fn fn_body_2() {
+        let input = "let x";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn fn_body_3() {
+        let input = "
+            return 7+8
+            ";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn fn_body_4() {
+        let input = "
+            let x = 7
+
+            function sqare(x) {
+                return x*x
+            }
+            ";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn fn_body_5() {
+        let input = "x*x";
+        let result = dbg!(FunctionBody::parse(input));
+
+        assert!(result.is_ok());
     }
 }
