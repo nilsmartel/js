@@ -1,3 +1,4 @@
+mod scope;
 use crate::parse::{
     expression::*,
     for_loop::{ForLoop, ForLoopCondition},
