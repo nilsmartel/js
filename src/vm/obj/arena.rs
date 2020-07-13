@@ -33,7 +33,7 @@ impl<T> Arena<T> {
         self.free_blocks.push(index);
     }
 
-    pub fn objects(&self) -> &Vec<T> {
-        &self.objects
+    pub fn objects(&mut self) -> &mut Vec<T> {
+        &mut self.objects
     }
 }

@@ -34,7 +34,23 @@ impl Value {
         match (self, other) {
             (Boolean(a), Boolean(b)) => Number(((a as u32) + (b as u32)) as f64),
             (Number(a), Number(b)) => Number(a + b),
-            _ => unimplemented!(),
+            _ => Undefined,
+        }
+    }
+
+    pub fn get(self, key: Value, arena: &mut Arena<Object>) -> Value {
+        match self {
+            Value::Reference(addr) => {
+                let obj = &arena.objects()[addr];
+                match (obj, key) {
+                    (Object::Array(a), Value::Number(i)) => a[i as usize].clone(),
+                    (Object::Map(m), Value::String(k)) => m
+                        .get(&k.to_string())
+                        .map_or(Value::Undefined, |v| v.clone()),
+                    _ => Value::Undefined,
+                }
+            }
+            _ => Value::Undefined,
         }
     }
 }

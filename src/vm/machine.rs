@@ -58,7 +58,7 @@ impl VirtualMachine {
                 let key = self.stack.pop().expect(EMPTY_STACK);
                 let obj = self.stack.pop().expect(EMPTY_STACK);
 
-                self.stack.push(obj.get(key));
+                self.stack.push(obj.get(key, &mut self.arena));
             }
             Add => {
                 let right = self.stack.pop().expect(EMPTY_STACK);
