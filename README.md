@@ -2,6 +2,11 @@
 
 ---
 
+## Please note:
+The title is lying! You are being deceived! This is not a complete Javascript Interpreter, this is a mere parser! While there are efforts to transform the AST into bytecode and the underlying stack machine is implemented already, development has halted for now.
+
+---
+
 ## Parser
 All Structures and Parser can be found in `src/parse/*`
 the Parser itself isn't completed, nor is it working correctly, but in a wide margin of cases it already works splendid.
