@@ -1,7 +1,7 @@
 [package]
 name = "js"
 version = "0.1.0"
-authors = ["Nils Martel <nils.martel@concepts-system.com>"]
+authors = ["Nils Martel <nilsmartel@yahoo.de>"]
 edition = "2018"
 
 [dependencies]
