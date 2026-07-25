@@ -8,7 +8,7 @@ use nom::{
     character::complete::char,
     combinator::map,
     sequence::{delimited, pair, preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 #[derive(Debug)]
@@ -147,7 +147,8 @@ impl MutationKind {
                 tag("*="),
                 tag("/="),
             )),
-        )(input)
+        )
+        .parse(input)
         .map(|(i, r)| {
             (
                 i,
@@ -171,9 +172,10 @@ impl Expr {
     }
 
     pub fn parse(i: &str) -> IResult<&str, Expr> {
-        if let Ok((rest, (variable, mutation))) = pair(Identifier::parse_ws, MutationKind::parse)(i)
+        if let Ok((rest, (variable, mutation))) =
+            pair(Identifier::parse_ws, MutationKind::parse).parse(i)
         {
-            let (rest, assign) = map(Expr::parse, Box::new)(rest)?;
+            let (rest, assign) = map(Expr::parse, Box::new).parse(rest)?;
             return Ok((
                 rest,
                 Expr::Mutate {
@@ -193,7 +195,8 @@ impl Expr {
         if let Ok((input, (case_true, case_false))) = preceded(
             char_ws('?'),
             separated_pair(Expr::parse, char_ws(':'), Expr::parse),
-        )(input)
+        )
+        .parse(input)
         {
             return Ok((
                 input,
@@ -325,7 +328,7 @@ impl Expr {
         let (rest, list) = concat(char_ws('.'), Identifier::parse_ws)(input)?;
 
         if list.len() == 0 {
-            return Err(nom::Err::Error((
+            return Err(nom::Err::Error(nom::error::Error::new(
                 rest,
                 nom::error::ErrorKind::SeparatedList,
             )));

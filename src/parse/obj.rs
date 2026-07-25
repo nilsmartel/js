@@ -10,11 +10,11 @@ use crate::parse::{
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, none_of},
+    character::complete::char,
     combinator::map,
-    multi::{many0, separated_list},
+    multi::separated_list0,
     sequence::{delimited, preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 use std::collections::HashMap;
 
@@ -50,7 +50,8 @@ impl Object {
         alt((
             map(tag("true"), |_| Object::Boolean(true)),
             map(tag("false"), |_| Object::Boolean(false)),
-        ))(input)
+        ))
+        .parse(input)
     }
 
     fn parse_number(input: &str) -> IResult<&str, Object> {
@@ -77,29 +78,31 @@ impl Object {
                 ),
             )),
             Object::Number,
-        )(input)
+        )
+        .parse(input)
     }
 
     fn parse_string(input: &str) -> IResult<&str, Object> {
-        map(StringTemplate::parse, Object::String)(input)
+        map(StringTemplate::parse, Object::String).parse(input)
     }
 
     fn parse_array(input: &str) -> IResult<&str, Object> {
         map(
             delimited(
                 char('['),
-                separated_list(char_ws(','), Expr::parse),
+                separated_list0(char_ws(','), Expr::parse),
                 char(']'),
             ),
             Object::Array,
-        )(input)
+        )
+        .parse(input)
     }
 
     fn parse_map(input: &str) -> IResult<&str, Object> {
         map(
             delimited(
                 char_ws('{'),
-                separated_list(
+                separated_list0(
                     char_ws(','),
                     separated_pair(Identifier::parse_ws, char_ws(':'), Expr::parse),
                 ),
@@ -108,22 +111,23 @@ impl Object {
             |pairs: Vec<(Identifier, Expr)>| {
                 Object::Map(pairs.into_iter().collect::<HashMap<_, _>>())
             },
-        )(input)
+        )
+        .parse(input)
     }
 
     fn parse_closure(input: &str) -> IResult<&str, Object> {
-        use nom::sequence::tuple;
         map(
-            tuple((
+            (
                 delimited(
                     char('('),
                     concat(char_ws(','), Identifier::parse_ws),
                     char_ws(')'),
                 ),
                 preceded(tag_ws("=>"), Statement::single_statement_body),
-            )),
+            ),
             |(args, body)| Object::Closure { args, body },
-        )(input)
+        )
+        .parse(input)
     }
 
     pub fn as_expr(self) -> Expr {
@@ -136,7 +140,8 @@ fn bin_digit1(input: &str) -> IResult<&str, String> {
     use nom::{character::complete::one_of, multi::many1};
     map(many1(one_of("01")), |list| {
         list.into_iter().collect::<String>()
-    })(input)
+    })
+    .parse(input)
 }
 
 #[cfg(test)]

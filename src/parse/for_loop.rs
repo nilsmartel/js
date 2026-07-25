@@ -7,7 +7,7 @@ use crate::parse::{
 };
 use nom::{
     sequence::{delimited, preceded, separated_pair},
-    IResult,
+    IResult, Parser,
 };
 
 #[derive(Debug)]
@@ -21,7 +21,8 @@ impl ForLoop {
         let (input, condition) = preceded(
             tag_ws("for"),
             delimited(char_ws('('), ForLoopCondition::parse, char_ws(')')),
-        )(input)?;
+        )
+        .parse(input)?;
 
         let (input, body) = Statement::single_statement_body(input)?;
 
@@ -36,7 +37,7 @@ impl ForLoop {
 /// for (let elem of array) { ... }
 /// ```
 #[derive(Debug)]
-enum ForLoopCondition {
+pub enum ForLoopCondition {
     // for(;;)
     CStyle {
         // This type of JavaScript only allows let as start of for loops
@@ -69,7 +70,8 @@ impl ForLoopCondition {
             Variable::parse,
             char_ws(';'),
             separated_pair(Expr::parse, char_ws(';'), Expr::parse),
-        )(input)?;
+        )
+        .parse(input)?;
 
         Ok((
             rest,

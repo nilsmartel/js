@@ -1,4 +1,6 @@
-use nom::IResult;
+use nom::{IResult, Parser};
+
+type Error<'a> = nom::error::Error<&'a str>;
 
 #[cfg(test)]
 mod tests {
@@ -46,38 +48,43 @@ mod tests {
 /// Remove all whitespace, newlines, tabs etc.
 /// Will always suceed
 pub fn whitespace(s: &str) -> IResult<&str, &str> {
-    nom::bytes::complete::take_while(|c| c == ' ' || c == '\n' || c == '\r' || c == '\t')(s)
+    nom::bytes::complete::take_while(|c| c == ' ' || c == '\n' || c == '\r' || c == '\t').parse(s)
 }
 
 /// Wrap around a Parser to automatically ignore preceding whitespace
 pub fn ignore_ws<'a, T>(
-    f: impl Fn(&'a str) -> IResult<&'a str, T>,
-) -> impl Fn(&'a str) -> IResult<&'a str, T> {
-    move |i: &str| {
+    mut f: impl Parser<&'a str, Output = T, Error = Error<'a>>,
+) -> impl FnMut(&'a str) -> IResult<&'a str, T> {
+    move |i: &'a str| {
         let (i, _) = whitespace(i).unwrap();
-        f(i)
+        f.parse(i)
     }
 }
 
 /// Tags a string while ignoring preceding whitespace
-pub fn tag_ws<'a>(t: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, &'a str> {
-    ignore_ws(move |input: &str| nom::bytes::complete::tag(t)(input))
+pub fn tag_ws<'a>(t: &'a str) -> impl FnMut(&'a str) -> IResult<&'a str, &'a str> {
+    ignore_ws(move |input: &'a str| nom::bytes::complete::tag(t).parse(input))
 }
 
 pub fn not_followed<'a, A, B>(
-    applied: impl Fn(&'a str) -> IResult<&'a str, A>,
-    follow: impl Fn(&'a str) -> IResult<&'a str, B>,
-) -> impl Fn(&'a str) -> IResult<&'a str, A> {
-    move |input: &str| {
-        let (rest, result) = applied(input)?;
-        nom::combinator::not(&follow)(rest)?;
+    mut applied: impl Parser<&'a str, Output = A, Error = Error<'a>>,
+    mut follow: impl Parser<&'a str, Output = B, Error = Error<'a>>,
+) -> impl FnMut(&'a str) -> IResult<&'a str, A> {
+    move |input: &'a str| {
+        let (rest, result) = applied.parse(input)?;
+        if follow.parse(rest).is_ok() {
+            return Err(nom::Err::Error(nom::error::Error::new(
+                rest,
+                nom::error::ErrorKind::Not,
+            )));
+        }
         Ok((rest, result))
     }
 }
 
 /// Tags a character while ignoring preceding whitespace
-pub fn char_ws(c: char) -> impl Fn(&str) -> IResult<&str, char> {
-    move |input: &str| ignore_ws(nom::character::complete::char(c))(input)
+pub fn char_ws<'a>(c: char) -> impl FnMut(&'a str) -> IResult<&'a str, char> {
+    ignore_ws(move |input: &'a str| nom::character::complete::char(c).parse(input))
 }
 
 /// List of Elements, seperated by `sep` parser, might be empty
@@ -85,14 +92,14 @@ pub fn char_ws(c: char) -> impl Fn(&str) -> IResult<&str, char> {
 /// fails.
 /// If no element is parsed, an empty Array will be returned
 pub fn concat<'a, T, Elem>(
-    sep: impl Fn(&'a str) -> IResult<&'a str, T>,
-    tag_elem: impl Fn(&'a str) -> IResult<&'a str, Elem>,
-) -> impl Fn(&'a str) -> IResult<&'a str, Vec<Elem>> {
-    move |input: &str| {
+    mut sep: impl Parser<&'a str, Output = T, Error = Error<'a>>,
+    mut tag_elem: impl Parser<&'a str, Output = Elem, Error = Error<'a>>,
+) -> impl FnMut(&'a str) -> IResult<&'a str, Vec<Elem>> {
+    move |input: &'a str| {
         let mut v: Vec<Elem> = Vec::new();
-        let first = tag_elem(input);
-        let (mut input, elem) = if first.is_ok() {
-            first.unwrap()
+        let first = tag_elem.parse(input);
+        let (mut input, elem) = if let Ok(res) = first {
+            res
         } else {
             return Ok((input, v));
         };
@@ -100,8 +107,8 @@ pub fn concat<'a, T, Elem>(
         v.push(elem);
 
         loop {
-            if let Ok((i, _)) = sep(input) {
-                let (i, elem) = tag_elem(i)?;
+            if let Ok((i, _)) = sep.parse(input) {
+                let (i, elem) = tag_elem.parse(i)?;
                 v.push(elem);
                 input = i;
                 continue;
@@ -115,14 +122,15 @@ pub fn concat<'a, T, Elem>(
 
 /// Fold a list of Elements, tagged be `tag_elem` and seperated by `sep`
 pub fn fold_concat<'a, T, E>(
-    sep: impl Fn(&'a str) -> IResult<&'a str, T>,
-    tag_elem: impl Fn(&'a str) -> IResult<&'a str, E>,
+    sep: impl Parser<&'a str, Output = T, Error = Error<'a>>,
+    tag_elem: impl Parser<&'a str, Output = E, Error = Error<'a>>,
     folding: impl Fn(E, E) -> E,
-) -> impl Fn(&'a str) -> IResult<&'a str, E> {
-    move |input: &str| {
-        let (rest, list) = concat(&sep, &tag_elem)(input)?;
+) -> impl FnMut(&'a str) -> IResult<&'a str, E> {
+    let mut inner = concat(sep, tag_elem);
+    move |input: &'a str| {
+        let (rest, list) = inner(input)?;
         if list.len() == 0 {
-            return Err(nom::Err::Error((
+            return Err(nom::Err::Error(nom::error::Error::new(
                 rest,
                 nom::error::ErrorKind::SeparatedList,
             )));
