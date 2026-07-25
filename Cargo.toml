@@ -5,4 +5,4 @@ authors = ["Nils Martel <nilsmartel@yahoo.de>"]
 edition = "2018"
 
 [dependencies]
-nom = "5.0.0"
+nom = "8.0.0"
