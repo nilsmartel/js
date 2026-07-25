@@ -13,7 +13,10 @@ impl Identifier {
         let (rest, identifier) = alpha1(input)?;
 
         if is_keyword(identifier) {
-            return Err(nom::Err::Error((input, nom::error::ErrorKind::Tag)));
+            return Err(nom::Err::Error(nom::error::Error::new(
+                input,
+                nom::error::ErrorKind::Tag,
+            )));
         }
 
         Ok((rest, Identifier(identifier.to_string())))

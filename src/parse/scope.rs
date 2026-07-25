@@ -2,7 +2,7 @@ use crate::{
     parse::*,
     parse::{expression::Expr, identifier::Identifier, instruction::FunctionBody},
 };
-use nom::IResult;
+use nom::{IResult, Parser};
 
 #[derive(Debug)]
 pub struct Variable {
@@ -16,7 +16,7 @@ impl Variable {
         let (i, identifier) = Identifier::parse_ws(i)?;
 
         use nom::sequence::preceded;
-        match preceded(tag_ws("="), ignore_ws(Expr::parse))(i) {
+        match preceded(tag_ws("="), ignore_ws(Expr::parse)).parse(i) {
             Ok((rest, expr)) => Ok((
                 rest,
                 Variable {
@@ -69,9 +69,11 @@ impl Function {
                 concat(char_ws(','), Identifier::parse_ws),
                 char_ws(')'),
             ),
-        )(input)?;
+        )
+        .parse(input)?;
 
-        let (input, body) = delimited(char_ws('{'), FunctionBody::parse, char_ws('}'))(input)?;
+        let (input, body) =
+            delimited(char_ws('{'), FunctionBody::parse, char_ws('}')).parse(input)?;
 
         Ok((
             input,

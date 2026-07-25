@@ -3,7 +3,7 @@ use nom::{
     combinator::opt,
     multi::many0,
     sequence::{delimited, preceded},
-    IResult,
+    IResult, Parser,
 };
 ///
 /// Definitions
@@ -45,7 +45,7 @@ impl FunctionBody {
             Ok((i, FbItem::Statement(s)))
         }
 
-        let (input, list) = many0(parse_fb_item)(input)?;
+        let (input, list) = many0(parse_fb_item).parse(input)?;
         let fb = list.into_iter().fold(
             FunctionBody {
                 scope: Vec::new(),
@@ -158,7 +158,8 @@ impl Statement {
             Statement::parse_break,
             Statement::parse_continue,
             Statement::parse_expression,
-        ))(input)
+        ))
+        .parse(input)
     }
 
     fn parse_for(input: &str) -> IResult<&str, Statement> {
@@ -173,7 +174,8 @@ impl Statement {
         let (input, condition) = preceded(
             tag_ws("if"),
             delimited(char_ws('('), Expr::parse, char_ws(')')),
-        )(input)?;
+        )
+        .parse(input)?;
 
         let (input, body) = Statement::single_statement_body(input)?;
         if let Ok((input, _)) = tag_ws("else")(input) {
@@ -202,7 +204,8 @@ impl Statement {
         let (input, condition) = preceded(
             tag_ws("while"),
             delimited(char_ws('('), Expr::parse, char_ws(')')),
-        )(input)?;
+        )
+        .parse(input)?;
 
         let (input, body) = Statement::single_statement_body(input)?;
 
@@ -216,7 +219,7 @@ impl Statement {
     }
 
     fn parse_return(input: &str) -> IResult<&str, Statement> {
-        let (input, ret) = preceded(tag_ws("return"), opt(Expr::parse))(input)?;
+        let (input, ret) = preceded(tag_ws("return"), opt(Expr::parse)).parse(input)?;
 
         if let Some(expr) = ret {
             Ok((input, Statement::Return(Some(Box::new(expr)))))
@@ -257,7 +260,7 @@ impl Statement {
         if let Ok((i, s)) = Statement::parse(input) {
             Ok((i, s.into_function_body()))
         } else {
-            delimited(char_ws('{'), FunctionBody::parse, char_ws('}'))(input)
+            delimited(char_ws('{'), FunctionBody::parse, char_ws('}')).parse(input)
         }
     }
 }

@@ -4,7 +4,7 @@ use nom::{
     combinator::map,
     multi::many0,
     sequence::delimited,
-    IResult,
+    IResult, Parser,
 };
 
 /// Template for String interpolation
@@ -22,6 +22,7 @@ impl StringTemplate {
                 start: list.into_iter().collect(),
                 end: Vec::new(),
             },
-        )(input)
+        )
+        .parse(input)
     }
 }
