@@ -1,2 +1,2 @@
 pub mod parse;
-mod vm;
+mod interpreter;
