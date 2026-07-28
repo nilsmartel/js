@@ -5,4 +5,5 @@ authors = ["Nils Martel <nilsmartel@yahoo.de>"]
 edition = "2018"
 
 [dependencies]
+dumpster = "2.1.0"
 nom = "8.0.0"

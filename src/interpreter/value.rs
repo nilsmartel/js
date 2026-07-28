@@ -1,18 +1,22 @@
-use std::{cell::Cell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
+use dumpster::{Trace, unsync::Gc};
 
 
 
 /// JavaScript Value aka. Object.
+#[derive(Trace)]
 pub enum Value {
     Bool(bool),
     Number(f64),
-    String(/*immutable string type */ Rc<String>),
+    String(/*immutable string type */ Gc<String>),
     Array(JsArray),
     Map(JsMap),
     // Function comes later, when I have more intuition about evaluation.
 }
 
-pub struct JsArray(Rc<Cell<Vec<Value>>>);
+#[derive(Trace)]
+pub struct JsArray(Gc<RefCell<Vec<Value>>>);
 
-pub struct JsMap(Rc<Cell<HashMap<Value, Value>>>);
+#[derive(Trace)]
+pub struct JsMap(Gc<RefCell<HashMap<Value, Value>>>);
