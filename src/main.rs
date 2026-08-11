@@ -23,3 +23,8 @@ fn main() {
     dbg!(x.borrow());
     dbg!(y.borrow());
 }
+
+
+/// NOTES:
+/// get returns a reference to a value
+/// e.g. get("a") => Reference, that we can even mutate or get the inner value
