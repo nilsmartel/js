@@ -1,15 +1,21 @@
-use std::{cell::{Cell, RefCell}, ops::AddAssign, rc::Rc};
 use dumpster::unsync::Gc;
+use std::{
+    cell::{Cell, RefCell},
+    ops::AddAssign,
+    rc::Rc,
+};
 
-pub mod parse;
 mod interpreter;
+pub mod parse;
 
 fn main() {
     let x: Rc<Cell<i32>> = Rc::new(Cell::new(27));
     let y = x.clone();
 
-    x.update(|x| x+1);
-    x.update(|y| y+1);
+    x.update(|x| x + 1);
+    x.update(|y| y + 1);
+
+    let x: String = "".into();
 
     eprintln!("we expect x and y to be of value 29 now");
     dbg!(x);
@@ -24,7 +30,6 @@ fn main() {
     dbg!(y.borrow());
 }
 
-
-/// NOTES:
-/// get returns a reference to a value
-/// e.g. get("a") => Reference, that we can even mutate or get the inner value
+// NOTES:
+// get returns a reference to a value
+// e.g. get("a") => Reference, that we can even mutate or get the inner value
