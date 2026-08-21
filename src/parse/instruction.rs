@@ -19,55 +19,33 @@ use nom::{
 /// List of Variable definitions, expressions, if/else pairs, for/whiles and return statements
 #[derive(Debug)]
 pub struct FunctionBody {
-    pub scope: Vec<Variable>,
-    pub functions: Vec<Function>,
-    pub instructions: Vec<Statement>,
+    pub items: Vec<FbItem>,
+}
+
+#[derive(Debug)]
+pub enum FbItem {
+    Var(Variable),
+    Statement(Statement),
+    Function(Function),
+}
+fn parse_fb_item(input: &str) -> IResult<&str, FbItem> {
+    if let Ok((i, v)) = Variable::parse(input) {
+        return Ok((i, FbItem::Var(v)));
+    }
+
+    if let Ok((i, f)) = Function::parse(input) {
+        return Ok((i, FbItem::Function(f)));
+    }
+
+    let (i, s) = Statement::parse(input)?;
+
+    Ok((i, FbItem::Statement(s)))
 }
 
 impl FunctionBody {
     pub fn parse(input: &str) -> IResult<&str, FunctionBody> {
-        enum FbItem {
-            Var(Variable),
-            Statement(Statement),
-            Function(Function),
-        }
-        fn parse_fb_item(input: &str) -> IResult<&str, FbItem> {
-            if let Ok((i, v)) = Variable::parse(input) {
-                return Ok((i, FbItem::Var(v)));
-            }
-
-            if let Ok((i, f)) = Function::parse(input) {
-                return Ok((i, FbItem::Function(f)));
-            }
-
-            let (i, s) = Statement::parse(input)?;
-
-            Ok((i, FbItem::Statement(s)))
-        }
-
-        let (input, list) = many0(parse_fb_item).parse(input)?;
-        let fb = list.into_iter().fold(
-            FunctionBody {
-                scope: Vec::new(),
-                functions: Vec::new(),
-                instructions: Vec::new(),
-            },
-            |mut acc, vs| {
-                match vs {
-                    FbItem::Var(v) => {
-                        acc.scope.push(v);
-                    }
-                    FbItem::Statement(s) => {
-                        acc.instructions.push(s);
-                    }
-                    FbItem::Function(f) => {
-                        acc.functions.push(f);
-                    }
-                };
-
-                acc
-            },
-        );
+        let (input, items) = many0(parse_fb_item).parse(input)?;
+        let fb = FunctionBody { items };
 
         Ok((input, fb))
     }

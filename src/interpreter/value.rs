@@ -1,12 +1,12 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use dumpster::{Trace, unsync::Gc};
-
-
+use dumpster::{unsync::Gc, Trace};
 
 /// JavaScript Value aka. Object.
 #[derive(Trace)]
 pub enum Value {
+    Undefined,
+    Null,
     Bool(bool),
     Number(f64),
     String(/*immutable string type */ Gc<String>),
